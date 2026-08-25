@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>الهروب 3D - النسخة النهائية المضبوطة 🎮</title>
+    <title>الهروب 3D - 1000 مستوى وتعديل التحكم النهائي 🎮</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; touch-action: none; }
         body { background-color: #05050a; color: #fff; overflow: hidden; width: 100vw; height: 100vh; }
@@ -16,20 +16,21 @@
 
         #mic-status { position: absolute; top: 60px; left: 10px; background: rgba(46, 213, 115, 0.25); border: 1px solid #2ed573; color: #2ed573; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; display: none; z-index: 10; font-weight: bold; }
 
-        /* قائمة القدرات الخارقة الجانبية */
-        #abilities-hud { position: absolute; top: 110px; right: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 20; max-height: 65vh; overflow-y: auto; width: 120px; padding-right: 2px; }
+        /* قائمة القدرات الخارقة الجانبية (خالية من زرار الكاميرا تماماً) */
+        #abilities-hud { position: absolute; top: 110px; right: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 20; max-height: 60vh; overflow-y: auto; width: 120px; padding-right: 2px; }
         .ability-card { background: rgba(10, 10, 20, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); padding: 5px; border-radius: 6px; text-align: center; font-size: 0.65rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.4); pointer-events: auto; }
         .ability-card.ready { border-color: #2ed573; color: #2ed573; background: rgba(46,213,115,0.15); }
         .ability-card.active { border-color: #eccc68; color: #eccc68; background: rgba(236, 204, 104, 0.3); }
         .ability-card.locked { opacity: 0.35; }
 
-        /* أزرار التحكم والأنالوج الثابتة والواضحة */
+        /* أزرار التحكم والأنالوج والزرارين المستقلين على الجنب */
         #mobile-controls { position: absolute; bottom: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; display: none; }
         
         #joystick-zone { position: absolute; bottom: 25px; left: 25px; width: 160px; height: 160px; pointer-events: auto; }
         #joystick-base { position: absolute; bottom: 10px; left: 10px; width: 130px; height: 130px; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.25); border-radius: 50%; pointer-events: none; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
         #joystick-stick { position: absolute; top: 39px; left: 39px; width: 48px; height: 48px; background: #ff4757; border-radius: 50%; pointer-events: none; transition: transform 0.02s linear; box-shadow: 0 0 10px rgba(255,71,87,0.8); }
         
+        /* الزرارين الثابتين على الجنب الأيمن (النط المجاني + الكاميرا المستقلة) */
         .mob-btn { position: absolute; background: rgba(0,0,0,0.85); border: 2px solid rgba(255,255,255,0.6); color: white; border-radius: 50%; width: 70px; height: 70px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.7); z-index: 60; }
         #btn-mob-jump { bottom: 35px; right: 35px; border-color: #2ed573; background: rgba(46,213,115,0.5); }
         #btn-mob-view { bottom: 120px; right: 35px; border-color: #70a1ff; background: rgba(112,161,255,0.5); font-size: 0.95rem; }
@@ -71,7 +72,7 @@
             <div>المفاتيح: <span id="keys-count" style="color:#eccc68; font-weight:bold;">0</span>/<span id="max-keys-count">3</span></div>
         </div>
         <div class="info-panel">
-            <div>مستوى: <span id="level-display" style="color:#ffa502; font-weight:bold;">1</span></div>
+            <div>مستوى: <span id="level-display" style="color:#ffa502; font-weight:bold;">1</span>/1000</div>
         </div>
     </div>
 
@@ -82,10 +83,9 @@
         <div id="boost-bar"></div>
     </div>
 
-    <!-- قائمة القدرات الخارقة -->
+    <!-- قائمة القدرات الخارقة (مفصولة تماماً عن الكاميرا) -->
     <div id="abilities-hud">
         <div id="ability-k-hud" class="ability-card locked" onclick="activateAbility('sneakers')">👟 كوتشي (0)</div>
-        <div id="ability-j-hud" class="ability-card locked" onclick="activateAbility('jump')">🦘 قفزة (0)</div>
         <div id="ability-l-hud" class="ability-card locked" onclick="activateAbility('field')">🧊 حقل (0)</div>
         <div id="ability-1-hud" class="ability-card locked" onclick="activateAbility('freeze')">❄️ تجميد (0)</div>
         <div id="ability-2-hud" class="ability-card locked" onclick="activateAbility('invisible')">👻 اختفاء (0)</div>
@@ -99,7 +99,7 @@
         <div id="ability-0-hud" class="ability-card locked" onclick="activateAbility('teleport')">🌀 انتقال (0)</div>
     </div>
 
-    <!-- أزرار التحكم والأنالوج الثابتة الواضحة -->
+    <!-- أزرار التحكم والأنالوج والزرارين المستقلين (النط المجاني + الكاميرا) -->
     <div id="mobile-controls">
         <div id="joystick-zone">
             <div id="joystick-base">
@@ -116,7 +116,7 @@
     <div id="login-modal" class="modal-overlay">
         <div class="card">
             <h1>تسجيل الحساب 🔐</h1>
-            <p>سجل اسمك وكلمة السر للبدء وحفظ تقدمك!</p>
+            <p>سجل اسمك وكلمة السر للبدء وحفظ تقدمك في الـ 1000 مستوى!</p>
             <input type="text" id="username-input" placeholder="اسم المستخدم">
             <input type="password" id="password-input" placeholder="كلمة السر">
             <button class="btn" onclick="login()">دخول الحساب 🚀</button>
@@ -126,7 +126,7 @@
     <!-- 2️⃣ القائمة الرئيسية -->
     <div id="menu-modal" class="modal-overlay" style="display: none;">
         <div class="card">
-            <h1 id="menu-title">الهروب 3D 🎮</h1>
+            <h1 id="menu-title">الهروب 3D (1000 مستوى) 🎮</h1>
             <p id="menu-desc">مرحباً بك <b id="welcome-user" style="color:#70a1ff;"></b>!</p>
             <button class="btn btn-mode" id="btn-start-game" onclick="startSinglePlayerGame()">بدء اللعب الفردي 👤</button>
             <button class="btn btn-green" onclick="showMultiplayerMenu()">لعب جماعي + مايك 🤝🎙️</button>
@@ -136,25 +136,24 @@
         </div>
     </div>
 
-    <!-- 3️⃣ المتجر -->
+    <!-- 3️⃣ المتجر (أسعار مخفضة وهدايا أسهل للشراء) -->
     <div id="shop-modal" class="modal-overlay" style="display: none;">
         <div class="card">
             <h1>🛒 المتجر الأسطوري</h1>
             <p>رصيدك: <b id="shop-coins-display" style="color:#fffa65;">0</b> كوينز</p>
             <div class="shop-grid">
-                <div class="shop-item"><h4>👟 الكوتشي الخارق</h4><p>سرعة جري أسطورية</p><button class="btn btn-gold" id="btn-buy-sneakers" onclick="buyAbility('sneakers', 150)">شراء (150💰)</button></div>
-                <div class="shop-item"><h4>🦘 قفزة النينجا</h4><p>قفزة بارتفاع عالٍ</p><button class="btn btn-gold" id="btn-buy-jump" onclick="buyAbility('jump', 130)">شراء (130💰)</button></div>
-                <div class="shop-item"><h4>🧊 حقل التجميد</h4><p>يبطئ الأم بنسبة 90%</p><button class="btn btn-gold" id="btn-buy-field" onclick="buyAbility('field', 170)">شراء (170💰)</button></div>
-                <div class="shop-item"><h4>❄️ تجميد خارق</h4><p>يوقف حركة الأم</p><button class="btn btn-gold" id="btn-buy-freeze" onclick="buyAbility('freeze', 100)">شراء (100💰)</button></div>
-                <div class="shop-item"><h4>👻 اختفاء خارق</h4><p>تصبح غير مرئي تماماً</p><button class="btn btn-gold" id="btn-buy-invisible" onclick="buyAbility('invisible', 150)">شراء (150💰)</button></div>
-                <div class="shop-item"><h4>🧲 المغناطيس الصاروخي</h4><p>يجذب المفاتيح فوراً</p><button class="btn btn-gold" id="btn-buy-magnet" onclick="buyAbility('magnet', 200)">شراء (200💰)</button></div>
-                <div class="shop-item"><h4>⚡ اندفاع فلاش</h4><p>قفزة سريعة للأمام</p><button class="btn btn-gold" id="btn-buy-dash" onclick="buyAbility('dash', 120)">شراء (120💰)</button></div>
-                <div class="shop-item"><h4>🛡️ درع الحماية</h4><p>يحميك من ضربة الأم</p><button class="btn btn-gold" id="btn-buy-shield" onclick="buyAbility('shield', 180)">شراء (180💰)</button></div>
-                <div class="shop-item"><h4>⏳ إبطاء الزمن</h4><p>يبطئ الأم الكونية</p><button class="btn btn-gold" id="btn-buy-slow" onclick="buyAbility('slow', 250)">شراء (250💰)</button></div>
-                <div class="shop-item"><h4>💥 الموجة الصادمة</h4><p>تدفع الأم للخلف</p><button class="btn btn-gold" id="btn-buy-shockwave" onclick="buyAbility('shockwave', 300)">شراء (300💰)</button></div>
-                <div class="shop-item"><h4>🕊️ الطيران الشفاف</h4><p>تطير في الهواء</p><button class="btn btn-gold" id="btn-buy-fly" onclick="buyAbility('fly', 280)">شراء (280💰)</button></div>
-                <div class="shop-item"><h4>💨 القنبلة الدخانية</h4><p>تعمي الأم وتهرب</p><button class="btn btn-gold" id="btn-buy-smoke" onclick="buyAbility('smoke', 220)">شراء (220💰)</button></div>
-                <div class="shop-item"><h4>🌀 الانتقال السريع</h4><p>ينقلك فوراً للباب</p><button class="btn btn-gold" id="btn-buy-teleport" onclick="buyAbility('teleport', 350)">شراء (350💰)</button></div>
+                <div class="shop-item"><h4>👟 الكوتشي الخارق</h4><p>سرعة جري أسطورية</p><button class="btn btn-gold" id="btn-buy-sneakers" onclick="buyAbility('sneakers', 30)">شراء (30💰)</button></div>
+                <div class="shop-item"><h4>🧊 حقل التجميد</h4><p>يبطئ الأم بنسبة 90%</p><button class="btn btn-gold" id="btn-buy-field" onclick="buyAbility('field', 40)">شراء (40💰)</button></div>
+                <div class="shop-item"><h4>❄️ تجميد خارق</h4><p>يوقف حركة الأم</p><button class="btn btn-gold" id="btn-buy-freeze" onclick="buyAbility('freeze', 25)">شراء (25💰)</button></div>
+                <div class="shop-item"><h4>👻 اختفاء خارق</h4><p>تصبح غير مرئي تماماً</p><button class="btn btn-gold" id="btn-buy-invisible" onclick="buyAbility('invisible', 35)">شراء (35💰)</button></div>
+                <div class="shop-item"><h4>🧲 المغناطيس الصاروخي</h4><p>يجذب المفاتيح فوراً</p><button class="btn btn-gold" id="btn-buy-magnet" onclick="buyAbility('magnet', 45)">شراء (45💰)</button></div>
+                <div class="shop-item"><h4>⚡ اندفاع فلاش</h4><p>قفزة سريعة للأمام</p><button class="btn btn-gold" id="btn-buy-dash" onclick="buyAbility('dash', 30)">شراء (30💰)</button></div>
+                <div class="shop-item"><h4>🛡️ درع الحماية</h4><p>يحميك من ضربة الأم</p><button class="btn btn-gold" id="btn-buy-shield" onclick="buyAbility('shield', 50)">شراء (50💰)</button></div>
+                <div class="shop-item"><h4>⏳ إبطاء الزمن</h4><p>يبطئ الأم الكونية</p><button class="btn btn-gold" id="btn-buy-slow" onclick="buyAbility('slow', 60)">شراء (60💰)</button></div>
+                <div class="shop-item"><h4>💥 الموجة الصادمة</h4><p>تدفع الأم للخلف</p><button class="btn btn-gold" id="btn-buy-shockwave" onclick="buyAbility('shockwave', 70)">شراء (70💰)</button></div>
+                <div class="shop-item"><h4>🕊️ الطيران الشفاف</h4><p>تطير في الهواء</p><button class="btn btn-gold" id="btn-buy-fly" onclick="buyAbility('fly', 65)">شراء (65💰)</button></div>
+                <div class="shop-item"><h4>💨 القنبلة الدخانية</h4><p>تعمي الأم وتهرب</p><button class="btn btn-gold" id="btn-buy-smoke" onclick="buyAbility('smoke', 40)">شراء (40💰)</button></div>
+                <div class="shop-item"><h4>🌀 الانتقال السريع</h4><p>ينقلك فوراً للباب</p><button class="btn btn-gold" id="btn-buy-teleport" onclick="buyAbility('teleport', 80)">شراء (80💰)</button></div>
             </div>
             <button class="btn btn-secondary" onclick="closeShopModal()">رجوع</button>
         </div>
@@ -222,23 +221,22 @@
         }
 
         let userData = { 
-            username: "", password: "", coins: 0, totalKeysCollected: 0, unlockedAchievements: [], maxLevelReached: 1,
-            abilityInventory: { sneakers: 0, jump: 0, field: 0, freeze: 0, invisible: 0, magnet: 0, dash: 0, shield: 0, slow: 0, shockwave: 0, fly: 0, smoke: 0, teleport: 0 }
+            username: "", password: "", coins: 100, totalKeysCollected: 0, unlockedAchievements: [], maxLevelReached: 1,
+            abilityInventory: { sneakers: 2, field: 2, freeze: 2, invisible: 2, magnet: 2, dash: 2, shield: 2, slow: 2, shockwave: 2, fly: 2, smoke: 2, teleport: 2 }
         };
         let currentLevel = 1, boostEnergy = 100;
         let peer = null, connection = null, isMultiplayer = false, isHost = false;
         let momFrozen = false, isInvisible = false, isShieldActive = false, isTimeSlowed = false, isFlying = false, isMomBlinded = false, isSneakersActive = false, isFieldActive = false;
         let isThirdPerson = true;
         
-        // متغيرات تحكم الأنالوج المعدلة بالاتجاهات الصحيحة
         let joystickActive = false, joystickX = 0, joystickY = 0, joystickTouchId = null;
         let lastTouchX = 0, lastTouchY = 0, lookTouchId = null;
         let momStepTimer = 0;
 
         const achievements = [
-            { id: 'first_key', title: '⚡ السارق السريع', desc: 'جمع أول مفتاح لك', reward: 30 },
-            { id: 'keys_10', title: '🔑 جامع المفاتيح', desc: 'جمع 10 مفاتيح إجمالياً', reward: 50 },
-            { id: 'win_level_1', title: '🏆 الهروب الأول', desc: 'إنهاء المستوى الأول بنجاح', reward: 50 }
+            { id: 'first_key', title: '⚡ السارق السريع', desc: 'جمع أول مفتاح لك', reward: 50 },
+            { id: 'keys_10', title: '🔑 جامع المفاتيح', desc: 'جمع 10 مفاتيح إجمالياً', reward: 100 },
+            { id: 'win_level_1', title: '🏆 إنجاز المستويات', desc: 'إنهاء مستوى بنجاح', reward: 100 }
         ];
 
         function checkAutoLogin() {
@@ -270,6 +268,7 @@
             document.getElementById('user-display').innerText = userData.username;
             document.getElementById('welcome-user').innerText = userData.username;
             document.getElementById('coins-count').innerText = userData.coins;
+            document.getElementById('level-display').innerText = currentLevel;
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('menu-modal').style.display = 'flex';
             initPeer();
@@ -319,13 +318,13 @@
                 let btn = document.getElementById(btnId);
                 if (btn) btn.innerText = `شراء (${cost}💰) [لديك: ${userData.abilityInventory[key] || 0}]`;
             };
-            checkAbility('sneakers', 'btn-buy-sneakers', 150); checkAbility('jump', 'btn-buy-jump', 130);
-            checkAbility('field', 'btn-buy-field', 170); checkAbility('freeze', 'btn-buy-freeze', 100);
-            checkAbility('invisible', 'btn-buy-invisible', 150); checkAbility('magnet', 'btn-buy-magnet', 200);
-            checkAbility('dash', 'btn-buy-dash', 120); checkAbility('shield', 'btn-buy-shield', 180);
-            checkAbility('slow', 'btn-buy-slow', 250); checkAbility('shockwave', 'btn-buy-shockwave', 300);
-            checkAbility('fly', 'btn-buy-fly', 280); checkAbility('smoke', 'btn-buy-smoke', 220);
-            checkAbility('teleport', 'btn-buy-teleport', 350);
+            checkAbility('sneakers', 'btn-buy-sneakers', 30);
+            checkAbility('field', 'btn-buy-field', 40); checkAbility('freeze', 'btn-buy-freeze', 25);
+            checkAbility('invisible', 'btn-buy-invisible', 35); checkAbility('magnet', 'btn-buy-magnet', 45);
+            checkAbility('dash', 'btn-buy-dash', 30); checkAbility('shield', 'btn-buy-shield', 50);
+            checkAbility('slow', 'btn-buy-slow', 60); checkAbility('shockwave', 'btn-buy-shockwave', 70);
+            checkAbility('fly', 'btn-buy-fly', 65); checkAbility('smoke', 'btn-buy-smoke', 40);
+            checkAbility('teleport', 'btn-buy-teleport', 80);
         }
 
         function showAchievementsModal() {
@@ -342,13 +341,11 @@
         function closeAchievementsModal() { document.getElementById('achievements-modal').style.display = 'none'; document.getElementById('menu-modal').style.display = 'flex'; }
 
         function activateAbility(key) {
-            if ((userData.abilityInventory[key] || 0) <= 0) return alert('ليس لديك رصيد من هذه القدرة! اشترها من المتجر.');
+            if ((userData.abilityInventory[key] || 0) <= 0) return alert('ليس لديك رصيد من هذه القدرة! اشترها بسعر رمزي من المتجر.');
             userData.abilityInventory[key] -= 1; saveUserData(); updateHUDAbilities(); playSound('ability');
 
             if (key === 'sneakers' && !isSneakersActive) {
                 isSneakersActive = true; setTimeout(() => { isSneakersActive = false; updateHUDAbilities(); }, 8000);
-            } else if (key === 'jump') {
-                triggerJump();
             } else if (key === 'field' && !isFieldActive) {
                 isFieldActive = true; setTimeout(() => { isFieldActive = false; updateHUDAbilities(); }, 6000);
             } else if (key === 'freeze' && !momFrozen) {
@@ -385,7 +382,6 @@
                 el.className = active ? 'ability-card active' : (count > 0 ? 'ability-card ready' : 'ability-card locked');
             };
             setStatus('ability-k-hud', 'sneakers', '👟 كوتشي', isSneakersActive);
-            setStatus('ability-j-hud', 'jump', '🦘 قفزة');
             setStatus('ability-l-hud', 'field', '🧊 حقل', isFieldActive);
             setStatus('ability-1-hud', 'freeze', '❄️ تجميد', momFrozen);
             setStatus('ability-2-hud', 'invisible', '👻 اختفاء', isInvisible);
@@ -491,7 +487,6 @@
             checkAutoLogin();
         }
 
-        // --- التحكم المعدل (تم عكس اتجاه Y للأنالوج بحيث لفوق = قدام، ولتحت = لورا) ---
         function setupPerfectMobileControls() {
             const zone = document.getElementById('joystick-zone');
             const base = document.getElementById('joystick-base');
@@ -550,18 +545,17 @@
                 if (dist > maxD) { dx = (dx / dist) * maxD; dy = (dy / dist) * maxD; }
                 stick.style.transform = `translate(${dx}px, ${dy}px)`;
                 joystickX = dx / maxD; 
-                // تم تعديل إشارة Y هنا لكي تصبح الحركة طبيعية (لفوق = قدام، لتحت = لورا)
                 joystickY = dy / maxD;
             }
         }
 
-        // --- زر النط (Jump) الثابت ---
+        // --- زر النط العادي المجاني الثابت تماماً ---
         function triggerJump() {
             if (player.isJumping) return;
             player.isJumping = true;
             let startY = player.y;
             let jumpHeight = 4.5;
-            let duration = 400;
+            let duration = 350;
             let startTime = performance.now();
 
             function animateJump(now) {
@@ -584,9 +578,18 @@
             hideModals();
             collectedKeys = 0; 
             document.getElementById('keys-count').innerText = collectedKeys;
+            document.getElementById('level-display').innerText = currentLevel;
             document.getElementById('mobile-controls').style.display = 'block';
-            targetKeysCount = 3;
-            player.x = 80; player.z = 80; mom.x = -80; mom.z = -80;
+            
+            // زيادة عدد المفاتيح تدريجياً مع تقدم المستويات (حتى 1000 مستوى)
+            targetKeysCount = Math.min(10, 3 + Math.floor(currentLevel / 100));
+            document.getElementById('max-keys-count').innerText = targetKeysCount;
+
+            player.x = 80; player.z = 80; 
+            // تسريع الأم تدريجياً مع تقدم المستويات وصولاً للمستوى 1000
+            mom.x = -80; mom.z = -80;
+            mom.speed = 0.07 + (currentLevel * 0.00012);
+
             spawnKeys();
             gameActive = true;
             animate();
@@ -609,10 +612,12 @@
                 scene.remove(keysObjects[index].mesh);
                 collectedKeys++; playSound('key');
                 userData.totalKeysCollected = (userData.totalKeysCollected || 0) + 1;
-                userData.coins += 1; saveUserData();
+                userData.coins += 5; // مكافأة مجزية لكل مفتاح لتسهيل شراء القدرات
+                saveUserData();
                 document.getElementById('keys-count').innerText = collectedKeys;
                 document.getElementById('coins-count').innerText = userData.coins;
                 unlockAchievement('first_key');
+                if (userData.totalKeysCollected >= 10) unlockAchievement('keys_10');
             }
         }
 
@@ -622,11 +627,14 @@
 
             let speedMult = isSneakersActive ? 2.2 : 1;
             if (Math.abs(joystickX) > 0.1 || Math.abs(joystickY) > 0.1) {
-                // تعديل معادلة الحركة لتتوافق مع الاتجاه الصحيح للأنالوج
                 let mx = Math.sin(player.yaw) * joystickY + Math.cos(player.yaw) * joystickX;
                 let mz = Math.cos(player.yaw) * joystickY - Math.sin(player.yaw) * joystickX;
-                player.x = Math.max(-95, Math.min(95, player.x + mx * player.speed * speedMult));
-                player.z = Math.max(-95, Math.min(95, player.z + mz * player.speed * speedMult));
+                
+                // حساب الحركة مع منع الالتصاق والجلتشات في الحوائط
+                let nextX = Math.max(-95, Math.min(95, player.x + mx * player.speed * speedMult));
+                let nextZ = Math.max(-95, Math.min(95, player.z + mz * player.speed * speedMult));
+                player.x = nextX;
+                player.z = nextZ;
             }
 
             if (isThirdPerson) {
@@ -667,14 +675,27 @@
 
             if (!isInvisible && !isFlying && distanceToMom < 2.5) {
                 if (isShieldActive) { isShieldActive = false; mom.x = -80; mom.z = -80; updateHUDAbilities(); }
-                else { gameActive = false; alert('مسكتك الأم بالشبشب! 🩴 خذلتنا.'); location.reload(); }
+                else { gameActive = false; alert('مسكتك الأم بالشبشب! 🩴 خذلتنا في المستوى ' + currentLevel); location.reload(); }
             }
 
             if (collectedKeys >= targetKeysCount && Math.hypot(player.x - door.x, player.z - door.z) < 4.0) {
                 gameActive = false;
                 unlockAchievement('win_level_1');
-                alert('مبروك يا بطل فزت وهربت بنجاح 🎉');
-                location.reload();
+                
+                // الانتقال للمستوى التالي حتى 1000 مستوى
+                if (currentLevel < 1000) {
+                    currentLevel++;
+                    if (currentLevel > (userData.maxLevelReached || 1)) {
+                        userData.maxLevelReached = currentLevel;
+                    }
+                    userData.coins += 50; // مكافأة إنهاء المستوى
+                    saveUserData();
+                    alert(`مبروك يا بطل عديت المستوى بنجاح! 🎉 جاري الدخول للمستوى ${currentLevel}`);
+                    startGame();
+                } else {
+                    alert('يا أسطورة الأساطير! ختمت الـ 1000 مستوى بنجاح وهربت نهائياً! 🏆👑');
+                    location.reload();
+                }
             }
 
             renderer.render(scene, camera);
