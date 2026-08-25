@@ -3,34 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>الهروب 3D - أنالوج للموبايل وأونلاين 🎮</title>
+    <title>الهروب 3D - نسخة مُعدلة وأنيقة 🎮</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; touch-action: none; }
-        body { background-color: #05050a; color: #fff; overflow: hidden; width: 100vw; height: 100vh; }
+        body { background-color: #1a1a2e; color: #fff; overflow: hidden; width: 100vw; height: 100vh; }
         #ui-container { position: absolute; top: 15px; right: 15px; left: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; pointer-events: none; }
-        .info-panel { display: flex; gap: 10px; font-size: 0.85rem; background: rgba(15, 15, 25, 0.85); backdrop-filter: blur(8px); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255, 71, 87, 0.4); }
+        .info-panel { display: flex; gap: 10px; font-size: 0.9rem; background: rgba(22, 27, 34, 0.9); backdrop-filter: blur(8px); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255, 107, 129, 0.4); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         
-        #mic-status { position: absolute; top: 65px; left: 15px; background: rgba(46, 213, 115, 0.2); border: 1px solid #2ed573; color: #2ed573; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; display: none; z-index: 10; }
+        #mic-status { position: absolute; top: 75px; left: 15px; background: rgba(46, 213, 115, 0.25); border: 1px solid #2ed573; color: #2ed573; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; display: none; z-index: 10; font-weight: bold; }
 
-        /* أزرار وعصا الأنالوج للموبايل */
+        /* الأنالوج وأزرار الموبايل الواضحة */
         #mobile-controls { position: absolute; bottom: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 15; display: none; }
-        #joystick-base { position: absolute; bottom: 40px; left: 40px; width: 130px; height: 130px; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; pointer-events: auto; }
-        #joystick-stick { position: absolute; top: 37px; left: 37px; width: 56px; height: 56px; background: rgba(255,71,87,0.75); border-radius: 50%; pointer-events: none; transition: transform 0.05s linear; }
+        #joystick-base { position: absolute; bottom: 40px; left: 40px; width: 140px; height: 140px; background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; pointer-events: auto; box-shadow: 0 0 20px rgba(0,0,0,0.4); }
+        #joystick-stick { position: absolute; top: 42px; left: 42px; width: 52px; height: 52px; background: #ff4757; border-radius: 50%; pointer-events: none; transition: transform 0.05s linear; box-shadow: 0 0 10px rgba(255,71,87,0.8); }
         
-        .mob-btn { position: absolute; background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.4); color: white; border-radius: 50%; width: 55px; height: 55px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; pointer-events: auto; cursor: pointer; }
-        #btn-mob-jump { bottom: 40px; right: 30px; border-color: #2ed573; background: rgba(46,213,115,0.3); }
-        #btn-mob-view { bottom: 110px; right: 30px; border-color: #70a1ff; background: rgba(112,161,255,0.3); font-size: 0.9rem; }
+        .mob-btn { position: absolute; background: rgba(0,0,0,0.7); border: 2px solid rgba(255,255,255,0.5); color: white; border-radius: 50%; width: 60px; height: 60px; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        #btn-mob-jump { bottom: 50px; right: 30px; border-color: #2ed573; background: rgba(46,213,115,0.35); }
+        #btn-mob-view { bottom: 125px; right: 30px; border-color: #70a1ff; background: rgba(112,161,255,0.35); font-size: 0.95rem; }
 
-        .modal-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(20, 20, 35, 0.96) 0%, rgba(5, 5, 10, 0.99) 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 15px; }
-        .card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(16px); padding: 20px; border-radius: 16px; text-align: center; width: 100%; max-width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
-        h1 { font-size: 1.4rem; color: #ff4757; margin-bottom: 10px; }
-        p { color: #a4b0be; margin-bottom: 12px; font-size: 0.85rem; }
-        input { width: 100%; padding: 10px; margin-bottom: 8px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.4); color: #fff; text-align: center; outline: none; text-transform: uppercase; font-size: 0.9rem; }
-        .btn { padding: 10px 16px; font-size: 0.85rem; font-weight: bold; background: linear-gradient(135deg, #ff4757, #ff6b81); color: white; border: none; border-radius: 8px; cursor: pointer; margin: 3px; width: 100%; }
-        .btn-secondary { background: #57606f; }
-        .btn-green { background: linear-gradient(135deg, #2ed573, #26af5f); }
-        .btn-mode { background: linear-gradient(135deg, #1e90ff, #70a1ff); }
-        .code-display { font-size: 1.2rem; letter-spacing: 2px; color: #fffa65; font-weight: bold; margin: 8px 0; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 6px; border: 1px dashed #eccc68; }
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(26, 26, 46, 0.98) 0%, rgba(10, 10, 18, 1) 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 15px; }
+        .card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(16px); padding: 25px; border-radius: 20px; text-align: center; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.7); }
+        h1 { font-size: 1.6rem; color: #ff4757; margin-bottom: 12px; font-weight: 800; text-shadow: 0 2px 10px rgba(255,71,87,0.4); }
+        p { color: #d1d8e0; margin-bottom: 15px; font-size: 0.9rem; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.5); color: #fff; text-align: center; outline: none; font-size: 1rem; }
+        .btn { padding: 12px; font-size: 0.95rem; font-weight: bold; background: linear-gradient(135deg, #ff4757, #ff6b81); color: white; border: none; border-radius: 10px; cursor: pointer; margin: 5px 0; width: 100%; box-shadow: 0 4px 15px rgba(255,71,87,0.4); transition: transform 0.1s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-secondary { background: #4b6584; box-shadow: none; }
+        .btn-green { background: linear-gradient(135deg, #2ed573, #26af5f); box-shadow: 0 4px 15px rgba(46,213,115,0.4); }
+        .btn-mode { background: linear-gradient(135deg, #1e90ff, #70a1ff); box-shadow: 0 4px 15px rgba(30,144,255,0.4); }
+        .code-box { font-size: 1.3rem; letter-spacing: 2px; color: #fffa65; font-weight: bold; margin: 10px 0; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; border: 1px dashed #eccc68; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -49,7 +50,7 @@
 
     <div id="mic-status">🎙️ المايك متصل</div>
 
-    <!-- أنالوج التحكم الحقيقي للموبايل -->
+    <!-- أنالوج التحكم للموبايل -->
     <div id="mobile-controls">
         <div id="joystick-base">
             <div id="joystick-stick"></div>
@@ -62,7 +63,7 @@
     <div id="login-modal" class="modal-overlay">
         <div class="card">
             <h1>تسجيل الدخول 🔐</h1>
-            <p>أدخل اسمك لبدء اللعبة فوراً!</p>
+            <p>أدخل اسمك المميز للبدء!</p>
             <input type="text" id="username-input" placeholder="اسم اللاعب">
             <button class="btn" onclick="login()">دخول 🚀</button>
         </div>
@@ -71,28 +72,34 @@
     <!-- القائمة الرئيسية -->
     <div id="menu-modal" class="modal-overlay" style="display: none;">
         <div class="card">
-            <h1>الهروب من الأم 🎮</h1>
-            <p>مرحباً بك <b id="welcome-user" style="color:#70a1ff;"></b>!</p>
+            <h1>الهروب من الأم 🏃‍♂️</h1>
+            <p>أهلاً بك <b id="welcome-user" style="color:#70a1ff;"></b></p>
             <button class="btn btn-mode" onclick="startSinglePlayer()">لعب فردي 👤</button>
-            <button class="btn btn-green" onclick="showMultiplayer()">لعب جماعي + مايك 🤝🎙️</button>
+            <button class="btn btn-green" onclick="showMultiplayer()">لعب جماعي محمي بكلمة سر 🛡️🎙️</button>
         </div>
     </div>
 
-    <!-- شاشة الأونلاين -->
+    <!-- شاشة الأونلاين مع الباسورد -->
     <div id="multiplayer-modal" class="modal-overlay" style="display: none;">
         <div class="card">
-            <h1>لعب جماعي عابر للأجهزة 🤝🎙️</h1>
+            <h1>الغرفة المحمية 🛡️</h1>
             <p id="peer-status" style="color:#eccc68;">جاري الاتصال بالسيرفر...</p>
-            <button class="btn btn-green" onclick="createRoom()">إنشاء غرفة جديدة 🏠</button>
+            
+            <div id="create-section">
+                <input type="text" id="room-password-create" placeholder="ضع كلمة سر للغرفة (اختياري)">
+                <button class="btn btn-green" onclick="createRoom()">إنشاء غرفة بكلمة سر 🏠</button>
+            </div>
             
             <div id="room-info" style="display:none; margin-top:10px;">
-                <div class="code-display" id="room-code-text">----</div>
-                <p style="color:#fffa65; font-size:0.75rem;">انسخ الكود وأعطه لصديقك (موبايل أو لابتوب)</p>
+                <p style="font-size: 0.8rem; color:#a4b0be;">كود غرفتك:</p>
+                <div class="code-box" id="room-code-text">----</div>
                 <button class="btn btn-mode" id="btn-start-multi" style="display:none;" onclick="startMultiplayerGame()">ابدأ اللعبة سوياً 🚀</button>
             </div>
             
-            <hr style="margin: 12px 0; opacity: 0.2;">
-            <input type="text" id="join-code-input" placeholder="أدخل كود صديقك هنا">
+            <hr style="margin: 15px 0; opacity: 0.2;">
+            
+            <input type="text" id="join-code-input" placeholder="أدخل كود صديقك">
+            <input type="password" id="room-password-join" placeholder="كلمة سر الغرفة">
             <button class="btn btn-mode" onclick="joinRoom()">انضمام للغرفة 🚀</button>
             <button class="btn btn-secondary" onclick="backToMenu()">رجوع</button>
         </div>
@@ -115,11 +122,11 @@
             osc.connect(gain); gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
             if (type === 'key') {
-                osc.frequency.setValueAtTime(440, now);
-                osc.frequency.setValueAtTime(660, now + 0.1);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-                osc.start(now); osc.stop(now + 0.2);
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.start(now); osc.stop(now + 0.25);
             }
         }
 
@@ -127,19 +134,19 @@
         let peer = null, connection = null, isMultiplayer = false;
         let scene, camera, renderer, momMesh, playerMesh, otherPlayerMesh;
         let keysObjects = [];
-        let player = { x: 50, y: 0, z: 50, speed: 0.25, yaw: 0, pitch: 0 };
-        let mom = { x: -50, z: -50, speed: 0.07 };
-        let door = { x: 0, z: -60 }, doorMesh;
+        let player = { x: 0, y: 0, z: 20, speed: 0.22, yaw: 0, pitch: 0 };
+        let mom = { x: 0, z: -30, speed: 0.065 };
+        let door = { x: 0, z: -45 }, doorMesh;
         let collectedKeys = 0, targetKeysCount = 3;
         let isThirdPerson = true, gameActive = false;
+        let roomPassword = "";
 
-        // متغيرات الأنالوج واللمس
         let joystickActive = false, joystickX = 0, joystickY = 0;
         let lastTouchX = 0, lastTouchY = 0;
 
         function login() {
             username = document.getElementById('username-input').value.trim();
-            if (!username) return alert('أدخل اسمك!');
+            if (!username) return alert('الرجاء إدخال اسم اللاعب!');
             document.getElementById('user-display').innerText = username;
             document.getElementById('welcome-user').innerText = username;
             document.getElementById('login-modal').style.display = 'none';
@@ -148,8 +155,8 @@
         }
 
         function initPeer() {
-            peer = new Peer('escgame-' + Math.floor(Math.random() * 100000));
-            peer.on('open', () => document.getElementById('peer-status').innerText = "🟢 جاهز للربط بين الأجهزة!");
+            peer = new Peer('escgame-' + Math.floor(Math.random() * 1000000));
+            peer.on('open', () => document.getElementById('peer-status').innerText = "🟢 متصل وجاهز للعب الجماعي!");
             peer.on('call', call => {
                 navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
                     call.answer(stream);
@@ -157,9 +164,24 @@
                 }).catch(e => console.log(e));
             });
             peer.on('connection', conn => {
-                connection = conn; setupConnectionEvents();
-                document.getElementById('btn-start-multi').style.display = 'block';
-                startMic(conn.peer);
+                connection = conn;
+                conn.on('data', data => {
+                    if (data.type === 'auth') {
+                        if (data.password !== roomPassword) {
+                            conn.send({ type: 'auth_fail' });
+                            alert('محاولة انضمام بكلمة سر خاطئة!');
+                            conn.close();
+                        } else {
+                            conn.send({ type: 'auth_success' });
+                            document.getElementById('btn-start-multi').style.display = 'block';
+                            startMic(conn.peer);
+                        }
+                    } else if (data.type === 'start') { hideModals(); startGame(); }
+                    else if (data.type === 'pos' && otherPlayerMesh) {
+                        otherPlayerMesh.position.set(data.x, data.y, data.z);
+                        otherPlayerMesh.rotation.y = data.yaw;
+                    }
+                });
             });
         }
 
@@ -179,24 +201,32 @@
 
         function createRoom() {
             isMultiplayer = true;
+            roomPassword = document.getElementById('room-password-create').value;
             document.getElementById('room-code-text').innerText = peer.id;
+            document.getElementById('create-section').style.display = 'none';
             document.getElementById('room-info').style.display = 'block';
         }
 
         function joinRoom() {
             let code = document.getElementById('join-code-input').value.trim();
-            if (!code) return alert('أدخل الكود!');
+            let pass = document.getElementById('room-password-join').value;
+            if (!code) return alert('أدخل كود الصديق!');
             isMultiplayer = true;
             connection = peer.connect(code);
-            setupConnectionEvents();
-            startMic(code);
-        }
+            
+            connection.on('open', () => {
+                connection.send({ type: 'auth', password: pass });
+            });
 
-        function setupConnectionEvents() {
-            connection.on('open', () => document.getElementById('peer-status').innerText = "🟢 تم الاتصال بنجاح!");
             connection.on('data', data => {
-                if (data.type === 'start') { hideModals(); startGame(); }
-                if (data.type === 'pos' && otherPlayerMesh) {
+                if (data.type === 'auth_fail') {
+                    alert('كلمة المرور غير صحيحة!');
+                } else if (data.type === 'auth_success') {
+                    document.getElementById('peer-status').innerText = "🟢 تم الانضمام بنجاح وبأمان!";
+                    startMic(code);
+                } else if (data.type === 'start') {
+                    hideModals(); startGame();
+                } else if (data.type === 'pos' && otherPlayerMesh) {
                     otherPlayerMesh.position.set(data.x, data.y, data.z);
                     otherPlayerMesh.rotation.y = data.yaw;
                 }
@@ -204,7 +234,7 @@
         }
 
         function startMultiplayerGame() {
-            if (!connection) return alert('في انتظار اتصال الصديق!');
+            if (!connection) return alert('في انتظار انضمام الصديق!');
             connection.send({ type: 'start' });
             hideModals(); startGame();
         }
@@ -215,44 +245,66 @@
         function hideModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
 
         function init3D() {
-            scene = new THREE.Scene(); scene.background = new THREE.Color(0x05050a);
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); camera.rotation.order = 'YXZ';
-            renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(window.innerWidth, window.innerHeight);
+            scene = new THREE.Scene(); 
+            scene.background = new THREE.Color(0x11111a); // لون خلفية مريح وواضح مش ضلمة
+            scene.fog = new THREE.FogExp2(0x11111a, 0.02);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); 
+            camera.rotation.order = 'YXZ';
+
+            renderer = new THREE.WebGLRenderer({ antialias: true }); 
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-            let dLight = new THREE.DirectionalLight(0xffffff, 0.8); dLight.position.set(20, 40, 20); scene.add(dLight);
+            // إضاءة قوية وواضحة جداً عشان ميبقاش فيه ظلمة نهائياً
+            let ambientLight = new THREE.AmbientLight(0xffffff, 0.9); 
+            scene.add(ambientLight);
 
-            let floor = new THREE.Mesh(new THREE.PlaneGeometry(150, 150), new THREE.MeshStandardMaterial({ color: 0x1e272e }));
-            floor.rotation.x = -Math.PI / 2; scene.add(floor);
+            let dirLight = new THREE.DirectionalLight(0xffffff, 1.0); 
+            dirLight.position.set(30, 60, 30); 
+            scene.add(dirLight);
 
-            let wallMat = new THREE.MeshStandardMaterial({ color: 0x485460 });
-            scene.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(150, 15, 3), wallMat), { position: { x: 0, y: 7.5, z: -75 } }));
-            scene.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(150, 15, 3), wallMat), { position: { x: 0, y: 7.5, z: 75 } }));
-            scene.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(3, 15, 150), wallMat), { position: { x: -75, y: 7.5, z: 0 } }));
-            scene.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(3, 15, 150), wallMat), { position: { x: 75, y: 7.5, z: 0 } }));
+            // أرضية بلون جذاب ومميز
+            let floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(120, 120), 
+                new THREE.MeshStandardMaterial({ color: 0x2f3640, roughness: 0.8 })
+            );
+            floor.rotation.x = -Math.PI / 2; 
+            scene.add(floor);
 
-            // اللاعب
+            // جدران الغرفة الواضحة
+            let wallMat = new THREE.MeshStandardMaterial({ color: 0x718093 });
+            let wall1 = new THREE.Mesh(new THREE.BoxGeometry(120, 12, 3), wallMat); wall1.position.set(0, 6, -60); scene.add(wall1);
+            let wall2 = new THREE.Mesh(new THREE.BoxGeometry(120, 12, 3), wallMat); wall2.position.set(0, 6, 60); scene.add(wall2);
+            let wall3 = new THREE.Mesh(new THREE.BoxGeometry(3, 12, 120), wallMat); wall3.position.set(-60, 6, 0); scene.add(wall3);
+            let wall4 = new THREE.Mesh(new THREE.BoxGeometry(3, 12, 120), wallMat); wall4.position.set(60, 6, 0); scene.add(wall4);
+
+            // تصميم اللاعب الأساسي
             playerMesh = new THREE.Group();
             let body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.5), new THREE.MeshStandardMaterial({ color: 0x0984e3 })); body.position.y = 0.75;
             let head = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshStandardMaterial({ color: 0xffdc34 })); head.position.y = 1.6;
             playerMesh.add(body, head); scene.add(playerMesh);
 
-            // اللاعب الثاني (أونلاين)
+            // اللاعب الثاني أونلاين
             otherPlayerMesh = new THREE.Group();
             let oBody = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.5), new THREE.MeshStandardMaterial({ color: 0x00b894 })); oBody.position.y = 0.75;
             let oHead = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshStandardMaterial({ color: 0xffdc34 })); oHead.position.y = 1.6;
             otherPlayerMesh.add(oBody, oHead); otherPlayerMesh.visible = false; scene.add(otherPlayerMesh);
 
-            // الأم
+            // الأم (المرعبة)
             momMesh = new THREE.Group();
             let mBody = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 1.2, 3), new THREE.MeshStandardMaterial({ color: 0xd63031 })); mBody.position.y = 1.5;
             let mHead = new THREE.Mesh(new THREE.SphereGeometry(0.6), new THREE.MeshStandardMaterial({ color: 0xffdc34 })); mHead.position.y = 3.2;
             momMesh.add(mBody, mHead); scene.add(momMesh);
 
-            // الباب
-            doorMesh = new THREE.Mesh(new THREE.BoxGeometry(4, 6, 0.5), new THREE.MeshStandardMaterial({ color: 0x70a1ff }));
-            doorMesh.position.set(door.x, 3, door.z); scene.add(doorMesh);
+            // باب الخروج
+            doorMesh = new THREE.Mesh(
+                new THREE.BoxGeometry(4, 6, 0.6), 
+                new THREE.MeshStandardMaterial({ color: 0x00cec9, emissive: 0x00cec9, emissiveIntensity: 0.2 })
+            );
+            doorMesh.position.set(door.x, 3, door.z); 
+            scene.add(doorMesh);
 
             setupJoystick();
             window.addEventListener('resize', () => {
@@ -279,13 +331,13 @@
                 let dx = t.clientX - (rect.left + rect.width / 2);
                 let dy = t.clientY - (rect.top + rect.height / 2);
                 let dist = Math.hypot(dx, dy);
-                let maxD = 40;
+                let maxD = 45;
                 if (dist > maxD) { dx = (dx / dist) * maxD; dy = (dy / dist) * maxD; }
                 stick.style.transform = `translate(${dx}px, ${dy}px)`;
                 joystickX = dx / maxD; joystickY = dy / maxD;
             }
 
-            // تحريك الكاميرا باللمس على الشاشة للموبايل
+            // حركة الكاميرا بسلاسة باللمس على الشاشة للموبايل
             window.addEventListener('touchstart', e => {
                 if (e.target.closest('#mobile-controls') || e.target.closest('.modal-overlay')) return;
                 lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY;
@@ -312,35 +364,35 @@
 
         function spawnKeys() {
             keysObjects.forEach(k => scene.remove(k.mesh)); keysObjects = [];
-            let geom = new THREE.TorusGeometry(0.5, 0.15, 8, 16);
-            let mat = new THREE.MeshStandardMaterial({ color: 0xf1c40f });
+            let geom = new THREE.TorusGeometry(0.6, 0.2, 10, 20);
+            let mat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, emissive: 0xf1c40f, emissiveIntensity: 0.5 });
             for (let i = 0; i < targetKeysCount; i++) {
                 let m = new THREE.Mesh(geom, mat);
-                m.position.set((Math.random() - 0.5) * 120, 1, (Math.random() - 0.5) * 120);
+                m.position.set((Math.random() - 0.5) * 100, 1.2, (Math.random() - 0.5) * 100);
                 scene.add(m); keysObjects.push({ mesh: m, collected: false });
             }
         }
 
-        function triggerJump() { player.y = 5; setTimeout(() => player.y = 0, 500); }
+        function triggerJump() { player.y = 4; setTimeout(() => player.y = 0, 400); }
         function toggleView() { isThirdPerson = !isThirdPerson; document.getElementById('view-mode-display').innerText = isThirdPerson ? 'ثالث' : 'أول'; }
 
         function animate() {
             if (!gameActive) return;
             requestAnimationFrame(animate);
 
-            // حركة الأنالوج
+            // حركة الأنالوج بدقة
             if (joystickX !== 0 || joystickY !== 0) {
                 let moveX = Math.sin(player.yaw) * (-joystickY) + Math.cos(player.yaw) * joystickX;
                 let moveZ = Math.cos(player.yaw) * (-joystickY) - Math.sin(player.yaw) * joystickX;
-                player.x = Math.max(-70, Math.min(70, player.x + moveX * player.speed));
-                player.z = Math.max(-70, Math.min(70, player.z + moveZ * player.speed));
+                player.x = Math.max(-55, Math.min(55, player.x + moveX * player.speed));
+                player.z = Math.max(-55, Math.min(55, player.z + moveZ * player.speed));
             }
 
-            // موقع الكاميرا
+            // تحديث الكاميرا
             if (isThirdPerson) {
-                let cx = player.x + Math.sin(player.yaw) * 7;
-                let cz = player.z + Math.cos(player.yaw) * 7;
-                camera.position.set(cx, player.y + 3.5, cz);
+                let cx = player.x + Math.sin(player.yaw) * 6;
+                let cz = player.z + Math.cos(player.yaw) * 6;
+                camera.position.set(cx, player.y + 3, cz);
                 camera.lookAt(player.x, player.y + 1, player.z);
             } else {
                 camera.position.set(player.x, player.y + 1.5, player.z);
@@ -354,7 +406,7 @@
                 connection.send({ type: 'pos', x: player.x, y: player.y, z: player.z, yaw: player.yaw });
             }
 
-            // حركة الأم
+            // حركة الأم نحو اللاعب
             let dx = player.x - mom.x, dz = player.z - mom.z;
             let dist = Math.hypot(dx, dz);
             if (dist > 0.5) {
@@ -363,9 +415,9 @@
             }
             momMesh.position.set(mom.x, 0, mom.z);
 
-            if (dist < 2.0) {
+            if (dist < 1.8) {
                 gameActive = false;
-                alert('مسكتك الأم! 🩴 خسرت.');
+                alert('مسكتك الأم بالشبشب! 🩴 خسرت.');
                 location.reload();
             }
 
@@ -378,9 +430,10 @@
                 }
             });
 
+            // الهروب والالفوز عند باب الخروج
             if (collectedKeys >= targetKeysCount && Math.hypot(player.x - door.x, player.z - door.z) < 3) {
                 gameActive = false;
-                alert('مبروك فزت وهربت من البيت! 🎉');
+                alert('مبروك يا بطل! فزت وهربت من البيت بنجاح 🎉');
                 location.reload();
             }
 
