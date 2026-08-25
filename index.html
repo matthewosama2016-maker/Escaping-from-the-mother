@@ -5,33 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Escaping from the mother</title>
   <style>
-    body { margin: 0; overflow: hidden; font-family: sans-serif; user-select: none; }
+    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; user-select: none; }
     #canvas-container { width: 100vw; height: 100vh; }
-    
-    /* أزرار التحكم للموبايل */
+    #ui {
+      position: absolute; top: 10px; left: 10px; color: white;
+      font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.6);
+      padding: 10px 15px; border-radius: 8px; z-index: 10;
+    }
     .touch-controls {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      display: grid;
-      grid-template-columns: repeat(3, 60px);
-      grid-template-rows: repeat(2, 60px);
-      gap: 10px;
-      z-index: 10000;
+      position: fixed; bottom: 20px; left: 20px;
+      display: grid; grid-template-columns: repeat(3, 60px);
+      grid-template-rows: repeat(2, 60px); gap: 10px; z-index: 10000;
     }
     .btn {
-      width: 60px;
-      height: 60px;
-      background: rgba(255, 255, 255, 0.5);
-      border: 2px solid #fff;
-      border-radius: 50%;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      touch-action: manipulation;
+      width: 60px; height: 60px; background: rgba(255, 255, 255, 0.4);
+      border: 2px solid #fff; border-radius: 50%; font-size: 24px;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation; color: white;
     }
-    .btn:active { background: rgba(255, 255, 255, 0.9); }
+    .btn:active { background: rgba(255, 255, 255, 0.8); }
     #btn-up { grid-column: 2; grid-row: 1; }
     #btn-left { grid-column: 1; grid-row: 2; }
     #btn-down { grid-column: 2; grid-row: 2; }
@@ -41,9 +33,14 @@
 </head>
 <body>
 
+  <div id="ui">
+    <div>الدرجة/المستوى: <span id="level">1</span></div>
+    <div>المفاتيح المطلوبة: <span id="keys">0</span> / 3</div>
+  </div>
+
   <div id="canvas-container"></div>
 
-  <!-- أزرار اللمس -->
+  <!-- أزرار الموبايل -->
   <div class="touch-controls">
     <div class="btn" id="btn-up">⬆️</div>
     <div class="btn" id="btn-left">⬅️</div>
@@ -52,44 +49,70 @@
   </div>
 
   <script>
-    // إعداد المشهد والكاميرا
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x222222);
-    
+    scene.background = new THREE.Color(0x111111);
+
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-    // إضافة الإضاءة
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 10, 7.5);
+    const light = new THREE.PointLight(0xffffff, 1, 100);
+    light.position.set(0, 10, 0);
     scene.add(light);
-    scene.add(new THREE.AmbientLight(0x404040));
+    scene.add(new THREE.AmbientLight(0x333333));
 
-    // إنشاء اللاعب
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-    const player = new THREE.Mesh(geometry, material);
+    // الأرضية
+    const floorGeo = new THREE.PlaneGeometry(60, 60);
+    const floorMat = new THREE.MeshBasicMaterial({ color: 0x222222, side: THREE.DoubleSide });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = Math.PI / 2;
+    scene.add(floor);
+
+    // اللاعب (الأزرق)
+    const playerGeo = new THREE.BoxGeometry(1, 1.8, 1);
+    const playerMat = new THREE.MeshBasicMaterial({ color: 0x0088ff });
+    const player = new THREE.Mesh(playerGeo, playerMat);
+    player.position.y = 0.9;
     scene.add(player);
 
-    // أرضية اللعبة
-    const grid = new THREE.GridHelper(50, 50);
-    scene.add(grid);
+    // الأم (الأحمر)
+    const motherGeo = new THREE.BoxGeometry(1.2, 2, 1.2);
+    const motherMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const mother = new THREE.Mesh(motherGeo, motherMat);
+    mother.position.set(20, 1, 20);
+    scene.add(mother);
 
-    camera.position.set(0, 5, 10);
-    camera.lookAt(player.position);
+    // المفاتيح
+    let keysCollected = 0;
+    let currentLevel = 1;
+    const keysArray = [];
+    
+    function spawnKeys() {
+      keysArray.forEach(k => scene.remove(k));
+      keysArray.length = 0;
+      for(let i=0; i<3; i++) {
+        const keyGeo = new THREE.SphereGeometry(0.4, 8, 8);
+        const keyMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        const key = new THREE.Mesh(keyGeo, keyMat);
+        key.position.set((Math.random() - 0.5) * 40, 0.5, (Math.random() - 0.5) * 40);
+        scene.add(key);
+        keysArray.push(key);
+      }
+    }
+    spawnKeys();
 
-    // حالات الحركة
+    camera.position.set(0, 5, 8);
+
+    // الحركة والتحكم
     const move = { up: false, down: false, left: false, right: false };
 
-    // ربط أزرار اللمس بالموبايل
-    const bindTouch = (id, direction) => {
+    const bindTouch = (id, dir) => {
       const el = document.getElementById(id);
-      el.addEventListener('touchstart', (e) => { e.preventDefault(); move[direction] = true; });
-      el.addEventListener('touchend', (e) => { e.preventDefault(); move[direction] = false; });
-      el.addEventListener('mousedown', () => move[direction] = true);
-      el.addEventListener('mouseup', () => move[direction] = false);
+      el.addEventListener('touchstart', (e) => { e.preventDefault(); move[dir] = true; });
+      el.addEventListener('touchend', (e) => { e.preventDefault(); move[dir] = false; });
+      el.addEventListener('mousedown', () => move[dir] = true);
+      el.addEventListener('mouseup', () => move[dir] = false);
     };
 
     bindTouch('btn-up', 'up');
@@ -97,40 +120,76 @@
     bindTouch('btn-left', 'left');
     bindTouch('btn-right', 'right');
 
-    // دعم لوحة المفاتيح
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowUp' || e.key === 'w') move.up = true;
-      if (e.key === 'ArrowDown' || e.key === 's') move.down = true;
-      if (e.key === 'ArrowLeft' || e.key === 'a') move.left = true;
-      if (e.key === 'ArrowRight' || e.key === 'd') move.right = true;
+      if (['ArrowUp', 'w', 'W'].includes(e.key)) move.up = true;
+      if (['ArrowDown', 's', 'S'].includes(e.key)) move.down = true;
+      if (['ArrowLeft', 'a', 'A'].includes(e.key)) move.left = true;
+      if (['ArrowRight', 'd', 'D'].includes(e.key)) move.right = right;
     });
 
     window.addEventListener('keyup', (e) => {
-      if (e.key === 'ArrowUp' || e.key === 'w') move.up = false;
-      if (e.key === 'ArrowDown' || e.key === 's') move.down = false;
-      if (e.key === 'ArrowLeft' || e.key === 'a') move.left = false;
-      if (e.key === 'ArrowRight' || e.key === 'd') move.right = false;
+      if (['ArrowUp', 'w', 'W'].includes(e.key)) move.up = false;
+      if (['ArrowDown', 's', 'S'].includes(e.key)) move.down = false;
+      if (['ArrowLeft', 'a', 'A'].includes(e.key)) move.left = false;
+      if (['ArrowRight', 'd', 'D'].includes(e.key)) move.right = false;
     });
 
-    // حلقة التحديث والحركة
     function animate() {
       requestAnimationFrame(animate);
 
-      const speed = 0.1;
+      // حركة اللاعب
+      const speed = 0.15;
       if (move.up) player.position.z -= speed;
       if (move.down) player.position.z += speed;
       if (move.left) player.position.x -= speed;
       if (move.right) player.position.x += speed;
 
+      // مطاردة الأم للاعب
+      const motherSpeed = 0.03 + (currentLevel * 0.01);
+      mother.position.x += (player.position.x - mother.position.x) * motherSpeed;
+      mother.position.z += (player.position.z - mother.position.z) * motherSpeed;
+
+      // التقاط المفاتيح
+      keysArray.forEach((key, index) => {
+        if (player.position.distanceTo(key.position) < 1.2) {
+          scene.remove(key);
+          keysArray.splice(index, 1);
+          keysCollected++;
+          document.getElementById('keys').innerText = keysCollected;
+
+          if (keysCollected >= 3) {
+            alert('مبروك! جمعت المفاتيح وانتقلت للمستوى التالي');
+            currentLevel++;
+            keysCollected = 0;
+            document.getElementById('level').innerText = currentLevel;
+            document.getElementById('keys').innerText = 0;
+            player.position.set(0, 0.9, 0);
+            mother.position.set(20, 1, 20);
+            spawnKeys();
+          }
+        }
+      });
+
+      // الإمساك باللاعب
+      if (player.position.distanceTo(mother.position) < 1.2) {
+        alert('الأم مسكتك! حاول مرة أخرى');
+        player.position.set(0, 0.9, 0);
+        mother.position.set(20, 1, 20);
+        keysCollected = 0;
+        document.getElementById('keys').innerText = 0;
+        spawnKeys();
+      }
+
+      // الكاميرا تتبع اللاعب
       camera.position.x = player.position.x;
-      camera.position.z = player.position.z + 10;
+      camera.position.z = player.position.z + 8;
+      camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
 
       renderer.render(scene, camera);
     }
 
     animate();
 
-    // إعادة ضبط الشاشة عند التدوير
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
