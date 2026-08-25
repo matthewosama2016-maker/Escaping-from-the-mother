@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>الهروب 3D - نسخة الموبايل المعدلة والمحسنة 🎮</title>
+    <title>الهروب 3D - النسخة النهائية المضبوطة 🎮</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; touch-action: none; }
         body { background-color: #05050a; color: #fff; overflow: hidden; width: 100vw; height: 100vh; }
@@ -23,17 +23,16 @@
         .ability-card.active { border-color: #eccc68; color: #eccc68; background: rgba(236, 204, 104, 0.3); }
         .ability-card.locked { opacity: 0.35; }
 
-        /* أزرار التحكم الجديدة والسلسة للموبايل */
-        #mobile-controls { position: absolute; bottom: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 15; display: none; }
+        /* أزرار التحكم والأنالوج الثابتة والواضحة */
+        #mobile-controls { position: absolute; bottom: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; display: none; }
         
-        /* الأنالوج المحسن (منطقة واسعة للاستجابة) */
-        #joystick-zone { position: absolute; bottom: 20px; left: 20px; width: 160px; height: 160px; pointer-events: auto; }
+        #joystick-zone { position: absolute; bottom: 25px; left: 25px; width: 160px; height: 160px; pointer-events: auto; }
         #joystick-base { position: absolute; bottom: 10px; left: 10px; width: 130px; height: 130px; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.25); border-radius: 50%; pointer-events: none; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
         #joystick-stick { position: absolute; top: 39px; left: 39px; width: 48px; height: 48px; background: #ff4757; border-radius: 50%; pointer-events: none; transition: transform 0.02s linear; box-shadow: 0 0 10px rgba(255,71,87,0.8); }
         
-        .mob-btn { position: absolute; background: rgba(0,0,0,0.8); border: 2px solid rgba(255,255,255,0.6); color: white; border-radius: 50%; width: 65px; height: 65px; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
-        #btn-mob-jump { bottom: 35px; right: 145px; border-color: #2ed573; background: rgba(46,213,115,0.4); }
-        #btn-mob-view { bottom: 115px; right: 145px; border-color: #70a1ff; background: rgba(112,161,255,0.4); font-size: 0.9rem; }
+        .mob-btn { position: absolute; background: rgba(0,0,0,0.85); border: 2px solid rgba(255,255,255,0.6); color: white; border-radius: 50%; width: 70px; height: 70px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.7); z-index: 60; }
+        #btn-mob-jump { bottom: 35px; right: 35px; border-color: #2ed573; background: rgba(46,213,115,0.5); }
+        #btn-mob-view { bottom: 120px; right: 35px; border-color: #70a1ff; background: rgba(112,161,255,0.5); font-size: 0.95rem; }
 
         #achievement-toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(46, 213, 115, 0.95); color: #fff; padding: 8px 18px; border-radius: 8px; font-weight: bold; font-size: 0.85rem; border: 1px solid #7bed9f; display: none; z-index: 99; }
 
@@ -100,7 +99,7 @@
         <div id="ability-0-hud" class="ability-card locked" onclick="activateAbility('teleport')">🌀 انتقال (0)</div>
     </div>
 
-    <!-- أزرار التحكم والأنالوج المحسنة -->
+    <!-- أزرار التحكم والأنالوج الثابتة الواضحة -->
     <div id="mobile-controls">
         <div id="joystick-zone">
             <div id="joystick-base">
@@ -170,7 +169,7 @@
         </div>
     </div>
 
-    <!-- 5️⃣ اللعب الجماعي (مصحح بالكامل) -->
+    <!-- 5️⃣ اللعب الجماعي -->
     <div id="multiplayer-modal" class="modal-overlay" style="display: none;">
         <div class="card">
             <h1>اللعب الجماعي والمايك 🤝🎙️</h1>
@@ -231,7 +230,7 @@
         let momFrozen = false, isInvisible = false, isShieldActive = false, isTimeSlowed = false, isFlying = false, isMomBlinded = false, isSneakersActive = false, isFieldActive = false;
         let isThirdPerson = true;
         
-        // متغيرات تحكم الأنالوج المحسنة
+        // متغيرات تحكم الأنالوج المعدلة بالاتجاهات الصحيحة
         let joystickActive = false, joystickX = 0, joystickY = 0, joystickTouchId = null;
         let lastTouchX = 0, lastTouchY = 0, lookTouchId = null;
         let momStepTimer = 0;
@@ -349,7 +348,7 @@
             if (key === 'sneakers' && !isSneakersActive) {
                 isSneakersActive = true; setTimeout(() => { isSneakersActive = false; updateHUDAbilities(); }, 8000);
             } else if (key === 'jump') {
-                player.y = 10; setTimeout(() => { player.y = 0; }, 1500);
+                triggerJump();
             } else if (key === 'field' && !isFieldActive) {
                 isFieldActive = true; setTimeout(() => { isFieldActive = false; updateHUDAbilities(); }, 6000);
             } else if (key === 'freeze' && !momFrozen) {
@@ -359,7 +358,7 @@
             } else if (key === 'magnet') {
                 keysObjects.forEach((k, idx) => { if (!k.collected) collectKeyByIndex(idx); });
             } else if (key === 'dash') {
-                let dx = -Math.sin(player.yaw) * 16, dz = -Math.cos(player.yaw) * 16;
+                let dx = Math.sin(player.yaw) * 16, dz = Math.cos(player.yaw) * 16;
                 player.x = Math.max(-95, Math.min(95, player.x + dx));
                 player.z = Math.max(-95, Math.min(95, player.z + dz));
             } else if (key === 'shield' && !isShieldActive) {
@@ -416,8 +415,6 @@
                 if (data.type === 'start') {
                     currentLevel = data.level;
                     hideModals(); startGame();
-                } else if (data.type === 'pos') {
-                    // استقبال إحداثيات الصديق في اللعب الجماعي لو أردت إظهاره
                 }
             });
         }
@@ -494,7 +491,7 @@
             checkAutoLogin();
         }
 
-        // --- نظام التحكم باللمس المحسن جداً (تم حل مشاكل الأنالوج تماماً) ---
+        // --- التحكم المعدل (تم عكس اتجاه Y للأنالوج بحيث لفوق = قدام، ولتحت = لورا) ---
         function setupPerfectMobileControls() {
             const zone = document.getElementById('joystick-zone');
             const base = document.getElementById('joystick-base');
@@ -514,7 +511,6 @@
                     if (joystickActive && touch.identifier === joystickTouchId) {
                         updateJoystickPosition(touch);
                     } else if (!joystickActive && touch.clientX > window.innerWidth / 2) {
-                        // تحريك الشاشة يمين ويسار لتدوير الكاميرا بسلاسة
                         if (lookTouchId === null) {
                             lookTouchId = touch.identifier;
                             lastTouchX = touch.clientX; lastTouchY = touch.clientY;
@@ -554,11 +550,12 @@
                 if (dist > maxD) { dx = (dx / dist) * maxD; dy = (dy / dist) * maxD; }
                 stick.style.transform = `translate(${dx}px, ${dy}px)`;
                 joystickX = dx / maxD; 
+                // تم تعديل إشارة Y هنا لكي تصبح الحركة طبيعية (لفوق = قدام، لتحت = لورا)
                 joystickY = dy / maxD;
             }
         }
 
-        // --- زر النط (Jump) المصحح والفعال 100% ---
+        // --- زر النط (Jump) الثابت ---
         function triggerJump() {
             if (player.isJumping) return;
             player.isJumping = true;
@@ -625,15 +622,16 @@
 
             let speedMult = isSneakersActive ? 2.2 : 1;
             if (Math.abs(joystickX) > 0.1 || Math.abs(joystickY) > 0.1) {
-                let mx = Math.sin(player.yaw) * (-joystickY) + Math.cos(player.yaw) * joystickX;
-                let mz = Math.cos(player.yaw) * (-joystickY) - Math.sin(player.yaw) * joystickX;
+                // تعديل معادلة الحركة لتتوافق مع الاتجاه الصحيح للأنالوج
+                let mx = Math.sin(player.yaw) * joystickY + Math.cos(player.yaw) * joystickX;
+                let mz = Math.cos(player.yaw) * joystickY - Math.sin(player.yaw) * joystickX;
                 player.x = Math.max(-95, Math.min(95, player.x + mx * player.speed * speedMult));
                 player.z = Math.max(-95, Math.min(95, player.z + mz * player.speed * speedMult));
             }
 
             if (isThirdPerson) {
-                let cx = player.x + Math.sin(player.yaw) * 7;
-                let cz = player.z + Math.cos(player.yaw) * 7;
+                let cx = player.x - Math.sin(player.yaw) * 7;
+                let cz = player.z - Math.cos(player.yaw) * 7;
                 camera.position.set(cx, player.y + 3.5, cz);
                 camera.lookAt(player.x, player.y + 1.5, player.z);
             } else {
