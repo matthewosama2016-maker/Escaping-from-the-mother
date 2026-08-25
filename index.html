@@ -22,12 +22,12 @@
         .ability-card.active { border-color: #eccc68; color: #eccc68; background: rgba(236, 204, 104, 0.2); }
         .ability-card.locked { opacity: 0.35; }
 
-        /* أزرار التحكم باللمس للموبايل */
-        #mobile-controls { position: absolute; bottom: 0; left: 0; width: 100vw; height: 110px; pointer-events: none; z-index: 20; display: flex; justify-content: space-between; padding: 10px 20px; align-items: center; }
+        /* أزرار التحكم باللمس للموبايل (الانالوج يسار والأزرار يمين) */
+        #mobile-controls { position: absolute; bottom: 0; left: 0; width: 100vw; height: 120px; pointer-events: none; z-index: 20; display: flex; justify-content: space-between; padding: 10px 20px; align-items: center; }
         .joystick-base { width: 90px; height: 90px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; position: relative; pointer-events: auto; touch-action: none; }
         .joystick-knob { width: 40px; height: 40px; background: rgba(255,71,87,0.8); border-radius: 50%; position: absolute; top: 25px; left: 25px; pointer-events: none; }
         .touch-btn-group { display: flex; gap: 10px; pointer-events: auto; }
-        .touch-btn { width: 50px; height: 50px; background: rgba(112, 161, 255, 0.3); border: 1px solid #70a1ff; border-radius: 50%; color: #fff; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; justify-content: center; active: background: rgba(112, 161, 255, 0.6); }
+        .touch-btn { width: 60px; height: 60px; background: rgba(112, 161, 255, 0.3); border: 1px solid #70a1ff; border-radius: 50%; color: #fff; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
         #achievement-toast { position: absolute; top: 80px; right: 20px; background: rgba(46, 213, 115, 0.95); color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; border: 1px solid #7bed9f; box-shadow: 0 4px 15px rgba(0,0,0,0.4); display: none; z-index: 99; }
 
@@ -90,14 +90,13 @@
         <div id="ability-5-hud" class="ability-card locked">🛡️ درع (0)</div>
     </div>
 
-    <!-- أزرار التحكم عبر اللمس للشاشات المحمولة -->
+    <!-- أزرار التحكم عبر اللمس (الانالوج على اليسار والأزرار على اليمين) -->
     <div id="mobile-controls">
         <div class="joystick-base" id="joystick">
             <div class="joystick-knob" id="joystick-knob"></div>
         </div>
         <div class="touch-btn-group">
             <div class="touch-btn" onclick="toggleViewMode()">كاميرا</div>
-            <div class="touch-btn" onclick="triggerJumpBtn()">قفز</div>
             <div class="touch-btn" style="background: rgba(255,71,87,0.3); border-color:#ff4757;" onclick="triggerBoostBtn()">جري</div>
         </div>
     </div>
@@ -242,10 +241,6 @@
                 osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1);
                 gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.005, now + 0.25);
                 osc.start(now); osc.stop(now + 0.25);
-            } else if (type === 'ability') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(220, now); osc.frequency.exponentialRampToValueAtTime(500, now + 0.3);
-                gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.005, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
             }
         }
 
@@ -258,12 +253,12 @@
         let peer = null, connection = null, mediaCall = null, localStream = null;
         let isMultiplayer = false, isHost = false;
 
-        let momFrozen = false, isInvisible = false, isShieldActive = false, isTimeSlowed = false, isFlying = false, isMomBlinded = false, isSneakersActive = false, isFieldActive = false;
+        let momFrozen = false, isInvisible = false, isShieldActive = false, isSneakersActive = false;
         let isThirdPerson = true;
         let cameraDistance = 7.0, cameraHeight = 3.0;
         let playerStepTimer = 0, momStepTimer = 0;
 
-        // عصا التحكم الافتراضية للموبايل
+        // عصا التحكم الافتراضية المضبوطة بدقة
         let joystickData = { active: false, x: 0, y: 0, touchId: null };
 
         const achievements = [
@@ -429,7 +424,7 @@
         function startSinglePlayerGame() { isMultiplayer = false; currentLevel = userData.maxLevelReached || 1; hideAllModals(); startGame(); }
         function hideAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
 
-        // --- إعداد عصا التحكم للموبايل ---
+        // --- إعداد عصا التحكم المضبوطة (على اليسار وبسرعة مستقرة) ---
         function initJoystick() {
             const base = document.getElementById('joystick');
             const knob = document.getElementById('joystick-knob');
@@ -476,9 +471,6 @@
             document.getElementById('view-mode-display').innerText = isThirdPerson ? "ثالث" : "أول";
             playerMesh.visible = isThirdPerson && !isInvisible;
         }
-        function triggerJumpBtn() {
-            player.y = 10; setTimeout(() => player.y = 0, 1500);
-        }
         function triggerBoostBtn() {
             isSneakersActive = true; setTimeout(() => isSneakersActive = false, 4000);
         }
@@ -486,7 +478,7 @@
         // --- محرك Three.js للعبة ---
         let scene, camera, renderer, momMesh, playerMesh, otherPlayerMesh;
         let keysObjects = [];
-        let player = { x: 80, y: 0, z: 80, speed: 0.25, yaw: Math.PI };
+        let player = { x: 80, y: 0, z: 80, speed: 0.22, yaw: Math.PI };
         let mom = { x: -80, z: -80, speed: 0.07 };
         let door = { x: 0, z: -70 }, doorMesh;
         let collectedKeys = 0, targetKeysCount = 3, gameActive = false;
@@ -621,10 +613,10 @@
             if (!gameActive) return;
             requestAnimationFrame(animate);
 
-            let speedMultiplier = isSneakersActive ? 2.2 : 1;
+            let speedMultiplier = isSneakersActive ? 1.8 : 1;
             if (joystickData.active) {
-                let moveX = -joystickData.x;
-                let moveZ = -joystickData.y;
+                let moveX = joystickData.x;
+                let moveZ = joystickData.y;
                 let actualMoveX = moveX * Math.cos(player.yaw) - moveZ * Math.sin(player.yaw);
                 let actualMoveZ = moveX * Math.sin(player.yaw) + moveZ * Math.cos(player.yaw);
 
