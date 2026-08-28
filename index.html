@@ -2,191 +2,742 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة الهروب 3D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الهروب 3D - نسخة الموبايل الخارقة 🎮📱</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: Tahoma, sans-serif;
-            background-color: #111;
-            color: #fff;
-            user-select: none;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+        body { background-color: #05050a; color: #fff; overflow: hidden; width: 100vw; height: 100vh; position: fixed; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        
+        #ui-container { position: absolute; top: 10px; right: 10px; left: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 10; pointer-events: none; font-size: 0.8rem; }
+        .info-panel { display: flex; gap: 8px; background: rgba(15, 15, 25, 0.85); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255, 71, 87, 0.4); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5); }
+        
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 8px; height: 8px; background-color: #fff; border: 2px solid #ff4757; border-radius: 50%; z-index: 10; pointer-events: none; display: none; }
+        
+        #boost-bar-container { position: absolute; top: 55px; right: 15px; width: 130px; background: rgba(0,0,0,0.6); padding: 5px; border-radius: 8px; border: 1px solid #70a1ff; z-index: 10; text-align: center; font-size: 0.7rem; }
+        #boost-bar { height: 6px; background: linear-gradient(90deg, #fffa65, #ffaf40); width: 100%; border-radius: 4px; }
 
-        #login-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
+        #mic-status { position: absolute; top: 55px; left: 15px; background: rgba(46, 213, 115, 0.2); border: 1px solid #2ed573; color: #2ed573; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; display: none; z-index: 10; }
 
-        .login-box {
-            background: #222;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,255,255,0.3);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 300px;
-        }
+        /* تجميع الأوات والقدرات على الجانب الأيمن والأيسر لعدم مضايقة اللاعب */
+        #abilities-hud { position: absolute; right: 15px; top: 95px; display: flex; flex-direction: column; gap: 5px; z-index: 10; pointer-events: auto; max-height: 55vh; overflow-y: auto; padding-right: 2px; }
+        .ability-card { background: rgba(10, 10, 20, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); padding: 5px 10px; border-radius: 8px; text-align: center; font-size: 0.7rem; cursor: pointer; min-width: 90px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+        .ability-card.ready { border-color: #2ed573; color: #2ed573; }
+        .ability-card.active { border-color: #eccc68; color: #eccc68; background: rgba(236, 204, 104, 0.3); }
+        .ability-card.locked { opacity: 0.35; }
 
-        .login-box input {
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #444;
-            background: #333;
-            color: #fff;
-            font-size: 16px;
-        }
+        /* أزرار التحكم الافتراضية للموبايل */
+        #mobile-controls { position: absolute; bottom: 0; left: 0; width: 100vw; height: 210px; z-index: 15; pointer-events: none; display: flex; justify-content: space-between; padding: 15px; }
+        .joystick-area { width: 130px; height: 130px; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; position: relative; pointer-events: auto; touch-action: none; align-self: flex-end; }
+        #joystick-knob { width: 50px; height: 50px; background: rgba(255, 71, 87, 0.8); border-radius: 50%; position: absolute; top: 40px; left: 40px; pointer-events: none; box-shadow: 0 0 10px #ff4757; }
+        
+        .action-buttons-area { display: flex; flex-direction: column; gap: 10px; pointer-events: auto; align-self: flex-end; }
+        .mob-btn { width: 65px; height: 45px; background: rgba(30, 144, 255, 0.8); border: 1px solid #70a1ff; color: white; border-radius: 10px; font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer; }
+        .mob-btn:active { background: rgba(30, 144, 255, 1); transform: scale(0.95); }
 
-        .login-box button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background: #00adb5;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        #achievement-toast { position: absolute; top: 80px; right: 20px; background: rgba(46, 213, 115, 0.95); color: #fff; padding: 10px 20px; border-radius: 10px; font-weight: bold; border: 1px solid #7bed9f; display: none; z-index: 99; font-size: 0.85rem; }
 
-        .login-box button:hover {
-            background: #00818a;
-        }
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(20, 20, 35, 0.98) 0%, rgba(5, 5, 10, 0.99) 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; overflow-y: auto; padding: 10px; }
+        .card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(16px); padding: 20px; border-radius: 20px; text-align: center; width: 95%; max-width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+        h1 { font-size: 1.5rem; color: #ff4757; margin-bottom: 10px; }
+        p { color: #a4b0be; margin-bottom: 12px; font-size: 0.85rem; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.4); color: #fff; text-align: center; outline: none; text-transform: uppercase; font-size: 0.9rem; }
+        input:focus { border-color: #ff4757; }
+        .btn { padding: 10px 16px; font-size: 0.85rem; font-weight: bold; background: linear-gradient(135deg, #ff4757, #ff6b81); color: white; border: none; border-radius: 10px; cursor: pointer; transition: 0.2s; margin: 3px; }
+        .btn-secondary { background: #57606f; }
+        .btn-mode { background: linear-gradient(135deg, #1e90ff, #70a1ff); }
+        .btn-green { background: linear-gradient(135deg, #2ed573, #26af5f); }
+        .btn-gold { background: linear-gradient(135deg, #eccc68, #ffa502); color: #000; }
+        .btn-danger { background: linear-gradient(135deg, #ff4757, #ff6b81); }
 
-        /* تحكم الموبايل والكمبيوتر */
-        #controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-            z-index: 5;
-        }
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: right; margin-bottom: 12px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+        .shop-item { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: space-between; }
+        .shop-item h4 { color: #eccc68; margin-bottom: 3px; font-size: 0.8rem; }
+        .shop-item p { font-size: 0.7rem; margin-bottom: 6px; color: #a4b0be; }
 
-        .ctrl-btn {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid #fff;
-            border-radius: 50%;
-            color: white;
-            font-size: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        /* تعديل أماكن الأزرار على الموبايل لتكون على الجنب عشان ماتعطلش الرؤية */
-        @media (max-width: 768px) {
-            #controls {
-                bottom: 20px;
-                left: 20px;
-                transform: none;
-                flex-direction: column;
-                gap: 10px;
-            }
-            .ctrl-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 16px;
-            }
-        }
+        .achievements-box { max-height: 200px; overflow-y: auto; text-align: right; margin-bottom: 12px; }
+        .achievement-item { background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; font-size: 0.8rem; }
+        .achievement-item.unlocked { border: 1px solid #2ed573; color: #2ed573; }
+        .achievement-item.locked { opacity: 0.5; }
+        .code-display { font-size: 1.2rem; letter-spacing: 3px; color: #fffa65; font-weight: bold; margin: 8px 0; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 8px; border: 1px dashed #eccc68; }
     </style>
-    <!-- مكتبة Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen">
-        <div class="login-box">
-            <h2>تسجيل الدخول</h2>
-            <input type="text" id="username" placeholder="اسم اللاعب">
-            <input type="password" id="password" placeholder="كلمة المرور">
-            <button id="login-btn">دخول وحفظ</button>
+    <div id="ui-container">
+        <div class="info-panel">
+            <div>اللاعب: <span id="user-display" style="color:#70a1ff; font-weight:bold;">-</span></div>
+            <div>💰 <span id="coins-count" style="color:#fffa65; font-weight:bold;">0</span></div>
+            <div>🔑 <span id="keys-count" style="color:#eccc68; font-weight:bold;">0</span>/<span id="max-keys-count">3</span></div>
+        </div>
+        <div class="info-panel">
+            <div>المنظور: <span id="view-mode-display" style="color:#fffa65; font-weight:bold;">ثالث</span></div>
+            <div>المستوى: <span id="level-display" style="color:#ffa502; font-weight:bold;">1</span></div>
         </div>
     </div>
 
-    <!-- أزرار التحكم -->
-    <div id="controls">
-        <div class="ctrl-btn" id="btn-up">⬆️</div>
-        <div class="ctrl-btn" id="btn-down">⬇️</div>
-        <div class="ctrl-btn" id="btn-left">⬅️</div>
-        <div class="ctrl-btn" id="btn-right">➡️</div>
+    <div id="mic-status">🎙️ المايك متصل!</div>
+    <div id="boost-bar-container">⚡ السرعة <div id="boost-bar"></div></div>
+
+    <!-- قائمة القدرات على الجانب الأيمن لكي لا تزعج اللاعب -->
+    <div id="abilities-hud">
+        <div id="ability-k-hud" class="ability-card locked" onclick="triggerAbilityByKey('k')">👟 كوتشي (0)</div>
+        <div id="ability-j-hud" class="ability-card locked" onclick="triggerAbilityByKey('j')">🦘 قفزة (0)</div>
+        <div id="ability-l-hud" class="ability-card locked" onclick="triggerAbilityByKey('l')">🧊 حقل (0)</div>
+        <div id="ability-1-hud" class="ability-card locked" onclick="triggerAbilityByKey('1')">❄️ تجميد (0)</div>
+        <div id="ability-2-hud" class="ability-card locked" onclick="triggerAbilityByKey('2')">👻 اختفاء (0)</div>
+        <div id="ability-3-hud" class="ability-card locked" onclick="triggerAbilityByKey('3')">🧲 مغناطيس (0)</div>
+        <div id="ability-5-hud" class="ability-card locked" onclick="triggerAbilityByKey('5')">🛡️ درع (0)</div>
     </div>
 
+    <div id="achievement-toast">🏆 إنجاز (+<span id="toast-reward">50</span>💰): <span id="toast-title"></span></div>
+    <div id="crosshair"></div>
+
+    <!-- أزرار التحكم باللمس للموبايل -->
+    <div id="mobile-controls">
+        <div class="joystick-area" id="joystick-base">
+            <div id="joystick-knob"></div>
+        </div>
+        <div class="action-buttons-area">
+            <div class="mob-btn" onclick="toggleCameraView()">المنظور</div>
+            <div class="mob-btn" style="background: linear-gradient(135deg, #eccc68, #ffa502); color:#000;" onclick="toggleBoost(true)">جري ⚡</div>
+        </div>
+    </div>
+
+    <!-- 1️⃣ تسجيل الدخول -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="card">
+            <h1>تسجيل الدخول 🔐</h1>
+            <p>سجل حسابك لحفظ النقود والمستويات تلقائياً!</p>
+            <input type="text" id="username-input" placeholder="اسم المستخدم">
+            <input type="password" id="password-input" placeholder="كلمة السر">
+            <button class="btn" onclick="login()">دخول وحفظ 🚀</button>
+        </div>
+    </div>
+
+    <!-- 2️⃣ القائمة الرئيسية -->
+    <div id="menu-modal" class="modal-overlay" style="display: none;">
+        <div class="card">
+            <h1 id="menu-title">الهروب 3D 🎮</h1>
+            <p id="menu-desc">أهلاً بك <b id="welcome-user" style="color:#70a1ff;"></b>!</p>
+            <div id="menu-buttons" style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn btn-mode" id="btn-start-game" onclick="startSinglePlayerGame()">بدء اللعب الفردي 👤</button>
+                <button class="btn btn-green" onclick="showMultiplayerMenu()">لعب جماعي + مايك 🤝🎙️</button>
+                <button class="btn btn-gold" onclick="showShopModal()">المتجر الأسطوري 🛒</button>
+                <button class="btn btn-secondary" onclick="showAchievementsModal()">الإنجازات 🏆</button>
+                <button class="btn btn-danger" onclick="resetLevelsProgress()">إعادة المستويات من الأول 🔄</button>
+                <button class="btn btn-secondary" style="background: #eb4d4b;" onclick="logout()">خروج 🚪</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3️⃣ المتجر -->
+    <div id="shop-modal" class="modal-overlay" style="display: none;">
+        <div class="card">
+            <h1>🛒 المتجر الخارق</h1>
+            <p>رصيدك: <b id="shop-coins-display" style="color:#fffa65;">0</b> كوينز</p>
+            <div class="shop-grid">
+                <div class="shop-item" style="grid-column: span 2; border: 2px solid #fffa65; background: rgba(255, 250, 101, 0.1);">
+                    <h4>👟 الكوتشي الخارق السريع</h4>
+                    <p>سرعة جري أسطورية (8 ثوانٍ)</p>
+                    <button class="btn btn-gold" id="btn-buy-sneakers" onclick="buyAbility('sneakers', 150)">شراء (150💰)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>🦘 قفزة النينجا</h4>
+                    <p>قفزة عالية جداً للهروب</p>
+                    <button class="btn btn-gold" id="btn-buy-jump" onclick="buyAbility('jump', 130)">شراء (130💰)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>🧊 حقل التجميد</h4>
+                    <p>يبطئ الأم بنسبة 90%</p>
+                    <button class="btn btn-gold" id="btn-buy-field" onclick="buyAbility('field', 170)">شراء (170💰)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>❄️ تجميد خارق</h4>
+                    <p>يوقف حركة الأم تماماً</p>
+                    <button class="btn btn-gold" id="btn-buy-freeze" onclick="buyAbility('freeze', 100)">شراء (100💰)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>👻 اختفاء</h4>
+                    <p>تصبح غير مرئي تماماً للأم</p>
+                    <button class="btn btn-gold" id="btn-buy-invisible" onclick="buyAbility('invisible', 150)">شراء (150💰)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>🧲 مغناطيس</h4>
+                    <p>يجذب المفاتيح فوراً</p>
+                    <button class="btn btn-gold" id="btn-buy-magnet" onclick="buyAbility('magnet', 200)">شراء (200💰)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>🛡️ درع الحماية</h4>
+                    <p>يحميك من ضربة الأم</p>
+                    <button class="btn btn-gold" id="btn-buy-shield" onclick="buyAbility('shield', 180)">شراء (180💰)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>🥷 سكن النينجا</h4>
+                    <p>مظهر أسود خارق</p>
+                    <button class="btn btn-gold" id="btn-buy-ninja" onclick="buySkin('skin_ninja', 120)">120 💰</button>
+                </div>
+                <div class="shop-item">
+                    <h4>👑 سكن البطل الذهبي</h4>
+                    <p>مظهر ذهبي متوهج</p>
+                    <button class="btn btn-gold" id="btn-buy-gold" onclick="buySkin('skin_gold', 250)">250 💰</button>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="closeShopModal()">رجوع</button>
+        </div>
+    </div>
+
+    <!-- 4️⃣ الإنجازات -->
+    <div id="achievements-modal" class="modal-overlay" style="display: none;">
+        <div class="card">
+            <h1>🏆 الإنجازات</h1>
+            <div class="achievements-box" id="achievements-list"></div>
+            <button class="btn btn-secondary" onclick="closeAchievementsModal()">رجوع</button>
+        </div>
+    </div>
+
+    <!-- 5️⃣ اللعب الجماعي -->
+    <div id="multiplayer-modal" class="modal-overlay" style="display: none;">
+        <div class="card">
+            <h1>اللعب الجماعي + مايك 🤝🎙️</h1>
+            <p id="peer-status" style="color:#eccc68;">جاري الاتصال بالسيرفر...</p>
+            <button class="btn btn-green" onclick="createRoom()">إنشاء غرفة جديدة 🏠</button>
+            <div id="room-info" style="display:none; margin-top:10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
+                <p style="color:#2ed573; font-weight:bold;">تم إنشاء الغرفة!</p>
+                <div class="code-display" id="generated-room-code">XXXXX</div>
+                <p id="player-waiting-text" style="color:#fffa65; font-size:0.8rem;">⏳ في انتظار انضمام صديقك...</p>
+                <button class="btn btn-mode" id="btn-start-multi" style="display:none;" onclick="startMultiplayerGame()">بدء اللعبة 🚀</button>
+            </div>
+            <hr style="margin: 10px 0; opacity: 0.2;">
+            <input type="text" id="join-code-input" placeholder="أدخل كود صديقك هنا">
+            <button class="btn btn-mode" onclick="joinRoom()">انضمام للغرفة 🚀</button>
+            <button class="btn btn-secondary" onclick="closeMultiplayerMenu()">رجوع</button>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
     <script>
-        // التحقق من الحفظ السابق في localStorage
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedUser = localStorage.getItem('game_username');
-            if (savedUser) {
-                document.getElementById('username').value = savedUser;
+        // --- محرك الأصوات ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        window.addEventListener('click', initAudio, { once: true });
+        window.addEventListener('touchstart', initAudio, { once: true });
+
+        function playSound(type, distance = 0) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            let spatialVol = Math.max(0.01, 1 - (distance / 80));
+
+            if (type === 'player_step') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.05);
+                gain.gain.setValueAtTime(0.02, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'mom_step') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.07);
+                gain.gain.setValueAtTime(0.05 * spatialVol, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+                osc.start(now); osc.stop(now + 0.07);
+            } else if (type === 'key') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554, now + 0.1);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.005, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'ability') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.exponentialRampToValueAtTime(500, now + 0.3);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.005, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
             }
-        });
+        }
 
-        // زر تسجيل الدخول والحفظ
-        document.getElementById('login-btn').addEventListener('click', () => {
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
+        // --- البيانات العامة ---
+        let userData = { 
+            username: "", password: "", coins: 0, totalKeysCollected: 0, keyCounterForCoin: 0, unlockedAchievements: [], unlockedItems: [], equippedSkin: 'default', maxLevelReached: 1,
+            abilityInventory: { sneakers: 0, jump: 0, field: 0, freeze: 0, invisible: 0, magnet: 0, shield: 0 }
+        };
+        let currentLevel = 1, boostEnergy = 100, isBoostActive = false;
+        let peer = null, connection = null, mediaCall = null;
+        let isMultiplayer = false, isHost = false;
 
-            if (user === '' || pass === '') {
-                alert('الرجاء إدخال الاسم وكلمة المرور!');
-                return;
+        let momFrozen = false, isInvisible = false, isShieldActive = false, isSneakersActive = false, isFieldActive = false;
+        let isThirdPerson = true;
+        let cameraDistance = 7.0, cameraHeight = 3.0;
+        let playerStepTimer = 0, momStepTimer = 0;
+
+        const achievements = [
+            { id: 'first_key', title: '⚡ السارق السريع', desc: 'جمع أول مفتاح لك', reward: 30 },
+            { id: 'keys_10', title: '🔑 جامع المفاتيح', desc: 'جمع 10 مفاتيح إجمالياً', reward: 50 },
+            { id: 'win_level_1', title: '🏆 الهروب الأول', desc: 'إنهاء المستوى الأول', reward: 50 },
+            { id: 'reach_10', title: '🏃 الهارب الصغير', desc: 'الوصول للمستوى 10', reward: 60 }
+        ];
+
+        // --- التحكم بالدخول ---
+        function checkAutoLogin() {
+            let lastUser = localStorage.getItem('game_last_active_user');
+            if (lastUser) {
+                let saved = localStorage.getItem('game_user_' + lastUser);
+                if (saved) {
+                    userData = JSON.parse(saved);
+                    if (!userData.abilityInventory) userData.abilityInventory = { sneakers: 0, jump: 0, field: 0, freeze: 0, invisible: 0, magnet: 0, shield: 0 };
+                    setupLoggedInUser();
+                    return;
+                }
             }
+            document.getElementById('login-modal').style.display = 'flex';
+        }
 
-            // حفظ البيانات
-            localStorage.setItem('game_username', user);
-            localStorage.setItem('game_password', pass);
-
-            // إخفاء شاشة تسجيل الدخول وبدء اللعبة
-            document.getElementById('login-screen').style.display = 'none';
-            initGame();
-        });
-
-        // إعداد لعبة Three.js الأساسية
-        function initGame() {
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            // مكعب تجريبي للعبة
-            const geometry = new THREE.BoxGeometry();
-            const material = new THREE.MeshBasicMaterial({ color: 0x00adb5 });
-            const cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-
-            camera.position.z = 5;
-
-            // حركة بسيطة للتأكد من عمل اللعبة
-            function animate() {
-                requestAnimationFrame(animate);
-                cube.rotation.x += 0.01;
-                cube.rotation.y += 0.01;
-                renderer.render(scene, camera);
+        function login() {
+            const u = document.getElementById('username-input').value.trim();
+            const p = document.getElementById('password-input').value.trim();
+            if (!u || !p) { alert('اكتب اسمك وكلمة السر!'); return; }
+            let saved = localStorage.getItem('game_user_' + u);
+            if (saved) {
+                let parsed = JSON.parse(saved);
+                if (parsed.password === p) userData = parsed;
+                else { alert('كلمة السر خاطئة!'); return; }
+            } else {
+                userData = { username: u, password: p, coins: 0, totalKeysCollected: 0, keyCounterForCoin: 0, unlockedAchievements: [], unlockedItems: [], equippedSkin: 'default', maxLevelReached: 1, abilityInventory: { sneakers: 0, jump: 0, field: 0, freeze: 0, invisible: 0, magnet: 0, shield: 0 } };
+                saveUserData();
             }
-            animate();
+            localStorage.setItem('game_last_active_user', userData.username);
+            setupLoggedInUser();
+        }
 
-            // إمكانية ربط أزرار التحكم بالحركة هنا لاحقاً
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
+        function setupLoggedInUser() {
+            document.getElementById('user-display').innerText = userData.username;
+            document.getElementById('welcome-user').innerText = userData.username;
+            document.getElementById('coins-count').innerText = userData.coins;
+            document.getElementById('login-modal').style.display = 'none';
+            document.getElementById('menu-modal').style.display = 'flex';
+            initPeer();
+        }
+
+        function logout() { localStorage.removeItem('game_last_active_user'); location.reload(); }
+        function saveUserData() { localStorage.setItem('game_user_' + userData.username, JSON.stringify(userData)); }
+        function resetLevelsProgress() {
+            if (confirm("إعادة المستويات للمستوى 1؟")) {
+                userData.maxLevelReached = 1; currentLevel = 1; saveUserData();
+                document.getElementById('level-display').innerText = `1`;
+                alert("تم إعادة المستويات!");
+            }
+        }
+
+        function unlockAchievement(id) {
+            if (!userData.unlockedAchievements.includes(id)) {
+                let ach = achievements.find(a => a.id === id);
+                let reward = ach ? ach.reward : 50;
+                userData.unlockedAchievements.push(id); userData.coins += reward; saveUserData();
+                document.getElementById('coins-count').innerText = userData.coins;
+                if (ach) {
+                    const toast = document.getElementById('achievement-toast');
+                    document.getElementById('toast-title').innerText = ach.title;
+                    document.getElementById('toast-reward').innerText = reward;
+                    toast.style.display = 'block';
+                    setTimeout(() => toast.style.display = 'none', 3000);
+                }
+            }
+        }
+
+        // --- المتجر والإنجازات ---
+        function showShopModal() {
+            document.getElementById('shop-coins-display').innerText = userData.coins;
+            updateShopButtons();
+            document.getElementById('menu-modal').style.display = 'none';
+            document.getElementById('shop-modal').style.display = 'flex';
+        }
+        function closeShopModal() { document.getElementById('shop-modal').style.display = 'none'; document.getElementById('menu-modal').style.display = 'flex'; }
+        
+        function buyAbility(abilityKey, cost) {
+            if (userData.coins >= cost) {
+                userData.coins -= cost;
+                userData.abilityInventory[abilityKey] = (userData.abilityInventory[abilityKey] || 0) + 1;
+                saveUserData();
+                document.getElementById('coins-count').innerText = userData.coins;
+                document.getElementById('shop-coins-display').innerText = userData.coins;
+                updateShopButtons(); updateHUDAbilities();
+                alert('تم الشراء بنجاح! 🎉');
+            } else { alert('ليس لديك كوينز كافية!'); }
+        }
+
+        function buySkin(itemId, cost) {
+            if (userData.unlockedItems.includes(itemId)) { userData.equippedSkin = itemId; saveUserData(); updateShopButtons(); alert('تم الارتداء! 👕'); return; }
+            if (userData.coins >= cost) {
+                userData.coins -= cost; userData.unlockedItems.push(itemId); userData.equippedSkin = itemId;
+                saveUserData(); document.getElementById('coins-count').innerText = userData.coins;
+                document.getElementById('shop-coins-display').innerText = userData.coins; updateShopButtons();
+                alert('تم شراء وارتداء السكن! 🎉');
+            } else { alert('كوينز غير كافية!'); }
+        }
+
+        function updateShopButtons() {
+            const checkSkin = (id, btnId) => {
+                let btn = document.getElementById(btnId); if (!btn) return;
+                if (userData.unlockedItems.includes(id)) {
+                    btn.innerText = userData.equippedSkin === id ? "مُرتدى 👕" : "ارتداء 🔄";
+                }
+            };
+            checkSkin('skin_ninja', 'btn-skin-ninja'); checkSkin('skin_gold', 'btn-skin-gold');
+        }
+
+        function showAchievementsModal() {
+            let list = document.getElementById('achievements-list'); list.innerHTML = '';
+            achievements.forEach(a => {
+                let unlocked = userData.unlockedAchievements.includes(a.id);
+                let div = document.createElement('div');
+                div.className = `achievement-item ${unlocked ? 'unlocked' : 'locked'}`;
+                div.innerHTML = `<span><b>${a.title}</b></span> <span>${unlocked ? '✅' : `🔒(${a.reward}💰)`}</span>`;
+                list.appendChild(div);
+            });
+            document.getElementById('menu-modal').style.display = 'none';
+            document.getElementById('achievements-modal').style.display = 'flex';
+        }
+        function closeAchievementsModal() { document.getElementById('achievements-modal').style.display = 'none'; document.getElementById('menu-modal').style.display = 'flex'; }
+
+        // --- المايك وغرف اللعب الجماعي ---
+        function initPeer() {
+            peer = new Peer(userData.username.toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + Math.floor(Math.random()*1000));
+            peer.on('open', (id) => { document.getElementById('peer-status').innerText = "🟢 متصل وجاهز!"; });
+            peer.on('call', call => {
+                navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
+                    call.answer(stream);
+                    call.on('stream', remoteStream => playRemoteAudio(remoteStream));
+                }).catch(e => console.log(e));
+            });
+            peer.on('connection', conn => {
+                connection = conn; setupEvents();
+                document.getElementById('player-waiting-text').innerText = "✅ انضم صديقك!";
+                document.getElementById('btn-start-multi').style.display = 'inline-block';
+                startVoiceCall(conn.peer);
             });
         }
+        function startVoiceCall(peerId) {
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
+                mediaCall = peer.call(peerId, stream);
+                mediaCall.on('stream', remoteStream => playRemoteAudio(remoteStream));
+                document.getElementById('mic-status').style.display = 'block';
+            }).catch(e => console.log(e));
+        }
+        function playRemoteAudio(stream) {
+            const audio = document.createElement('audio');
+            audio.srcObject = stream; audio.autoplay = true; audio.play();
+            document.getElementById('mic-status').style.display = 'block';
+        }
+        function createRoom() { isMultiplayer = true; isHost = true; document.getElementById('generated-room-code').innerText = peer.id; document.getElementById('room-info').style.display = 'block'; }
+        function showMultiplayerMenu() { document.getElementById('menu-modal').style.display = 'none'; document.getElementById('multiplayer-modal').style.display = 'flex'; }
+        function closeMultiplayerMenu() { document.getElementById('multiplayer-modal').style.display = 'none'; document.getElementById('menu-modal').style.display = 'flex'; }
+        function joinRoom() {
+            let code = document.getElementById('join-code-input').value.trim();
+            if(!code) return alert('أدخل الكود!');
+            isMultiplayer = true; isHost = false;
+            connection = peer.connect(code); setupEvents(); startVoiceCall(code);
+        }
+        function setupEvents() {
+            connection.on('open', () => document.getElementById('peer-status').innerText = "🟢 متصل بالغرفة!");
+            connection.on('data', data => {
+                if(data.type === 'start' || data.type === 'next_level') { currentLevel = data.level; hideAllModals(); startGame(); }
+                if(data.type === 'key') collectKeyByIndex(data.index);
+                if(data.type === 'playerPos' && otherPlayerMesh) {
+                    otherPlayerMesh.position.set(data.x, data.y || 0, data.z);
+                    otherPlayerMesh.rotation.y = data.yaw;
+                    otherPlayerMesh.visible = !data.invisible;
+                }
+            });
+        }
+        function startMultiplayerGame() { connection.send({ type: 'start', level: currentLevel }); hideAllModals(); startGame(); }
+        function startSinglePlayerGame() { isMultiplayer = false; currentLevel = userData.maxLevelReached || 1; hideAllModals(); startGame(); }
+        function hideAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+
+        // --- محرك Three.js 3D ---
+        let scene, camera, renderer, momMesh, playerMesh, otherPlayerMesh, pantsMat, shirtMat;
+        let keysObjects = [];
+        let player = { x: 80, y: 0, z: 80, speed: 0.28, yaw: Math.PI, pitch: 0 };
+        let mom = { x: -80, z: -80, speed: 0.08 };
+        let door = { x: 0, z: -70 }, doorMesh;
+        let collectedKeys = 0, targetKeysCount = 3, gameActive = false;
+
+        // عصا التحكم للموبايل (Joystick)
+        let joystickMove = { x: 0, y: 0 };
+        let touchStartPos = { x: 0, y: 0 };
+        let isJoystickActive = false;
+
+        function init3D() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x05050a);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); camera.rotation.order = 'YXZ';
+            renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(window.innerWidth, window.innerHeight); container.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            let dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(30, 50, 30); scene.add(dirLight);
+
+            buildEnvironment();
+            initTouchJoystick();
+            checkAutoLogin();
+        }
+
+        function initTouchJoystick() {
+            const base = document.getElementById('joystick-base');
+            const knob = document.getElementById('joystick-knob');
+            
+            base.addEventListener('touchstart', (e) => {
+                isJoystickActive = true;
+                let touch = e.touches[0];
+                touchStartPos = { x: touch.clientX, y: touch.clientY };
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isJoystickActive) return;
+                let touch = Array.from(e.touches).find(t => t.target === base || base.contains(t.target)) || e.touches[0];
+                let dx = touch.clientX - touchStartPos.x;
+                let dy = touch.clientY - touchStartPos.y;
+                let dist = Math.hypot(dx, dy);
+                let maxDist = 45;
+                if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
+                
+                knob.style.transform = `translate(${dx}px, ${dy}px)`;
+                joystickMove.x = dx / maxDist;
+                joystickMove.y = dy / maxDist;
+            });
+
+            window.addEventListener('touchend', () => {
+                isJoystickActive = false;
+                joystickMove = { x: 0, y: 0 };
+                knob.style.transform = `translate(0px, 0px)`;
+            });
+
+            // تدوير الكاميرا بسحب الشاشة الفارغة
+            let lastTouchX = 0;
+            window.addEventListener('touchstart', (e) => { lastTouchX = e.touches[0].clientX; });
+            window.addEventListener('touchmove', (e) => {
+                if (isJoystickActive) return;
+                let dx = e.touches[0].clientX - lastTouchX;
+                player.yaw -= dx * 0.005;
+                lastTouchX = e.touches[0].clientX;
+            });
+        }
+
+        function toggleCameraView() {
+            isThirdPerson = !isThirdPerson;
+            document.getElementById('view-mode-display').innerText = isThirdPerson ? "ثالث" : "أول";
+            playerMesh.visible = isThirdPerson && !isInvisible;
+        }
+
+        function toggleBoost(active) { isBoostActive = active; setTimeout(() => isBoostActive = false, 1000); }
+
+        function buildEnvironment() {
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0x222733 }));
+            floor.rotation.x = -Math.PI / 2; scene.add(floor);
+
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0x2f3542 });
+            const createWall = (w, h, d, x, y, z) => {
+                const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+                mesh.position.set(x, y, z); scene.add(mesh);
+            };
+            createWall(200, 20, 4, 0, 10, -100); createWall(200, 20, 4, 0, 10, 100);
+            createWall(4, 20, 200, -100, 10, 0); createWall(4, 20, 200, 100, 10, 0);
+
+            // الأم (فردة كوتشي وشراب واليد ماسكة الفردة الثانية)
+            momMesh = new THREE.Group();
+            let dress = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 1.6, 3.8, 16), new THREE.MeshStandardMaterial({ color: 0xeb4d4b })); dress.position.y = 1.9;
+            let momHead = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffddaa })); momHead.position.y = 4.3;
+            let shoeMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            let momLeftShoe = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.25, 0.7), shoeMat); momLeftShoe.position.set(-0.35, 0.12, 0.1);
+            let momRightSock = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.22, 0.65), new THREE.MeshStandardMaterial({ color: 0xffffff })); momRightSock.position.set(0.35, 0.11, 0.1);
+            let momArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.2, 8), new THREE.MeshStandardMaterial({ color: 0xffddaa })); momArm.position.set(0.95, 2.7, 0.3); momArm.rotation.x = -Math.PI / 3;
+            let heldShoe = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.25, 0.7), shoeMat); heldShoe.position.set(0.95, 3.1, 0.6);
+            momMesh.add(dress, momHead, momLeftShoe, momRightSock, momArm, heldShoe); scene.add(momMesh);
+
+            // اللاعب
+            playerMesh = new THREE.Group();
+            pantsMat = new THREE.MeshStandardMaterial({ color: 0x22a6b3 });
+            shirtMat = new THREE.MeshStandardMaterial({ color: 0xf0932b });
+            let pants = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2, 12), pantsMat); pants.position.y = 0.6;
+            let shirt = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.2, 12), shirtMat); shirt.position.y = 1.8;
+            let pHead = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshStandardMaterial({ color: 0xffddaa })); pHead.position.y = 2.8;
+            playerMesh.add(pants, shirt, pHead); scene.add(playerMesh);
+
+            // لاعب ثاني للملتي بلاير
+            otherPlayerMesh = new THREE.Group();
+            let oPants = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2, 12), new THREE.MeshStandardMaterial({ color: 0x22a6b3 })); oPants.position.y = 0.6;
+            let oShirt = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.2, 12), new THREE.MeshStandardMaterial({ color: 0xf0932b })); oShirt.position.y = 1.8;
+            let oHead = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshStandardMaterial({ color: 0xffddaa })); oHead.position.y = 2.8;
+            otherPlayerMesh.add(oPants, oShirt, oHead); otherPlayerMesh.visible = false; scene.add(otherPlayerMesh);
+
+            doorMesh = new THREE.Mesh(new THREE.BoxGeometry(4, 6, 0.5), new THREE.MeshStandardMaterial({ color: 0x70a1ff }));
+            doorMesh.position.set(door.x, 3, door.z); scene.add(doorMesh);
+        }
+
+        function updateHUDAbilities() {
+            const setStatus = (id, key, title) => {
+                let el = document.getElementById(id); if (!el) return;
+                let count = userData.abilityInventory[key] || 0;
+                el.innerText = `${title} (${count})`;
+                el.className = count > 0 ? 'ability-card ready' : 'ability-card locked';
+            };
+            setStatus('ability-k-hud', 'sneakers', '👟 كوتشي');
+            setStatus('ability-j-hud', 'jump', '🦘 قفزة');
+            setStatus('ability-l-hud', 'field', '🧊 حقل');
+            setStatus('ability-1-hud', 'freeze', '❄️ تجميد');
+            setStatus('ability-2-hud', 'invisible', '👻 اختفاء');
+            setStatus('ability-3-hud', 'magnet', '🧲 مغناطيس');
+            setStatus('ability-5-hud', 'shield', '🛡️ درع');
+        }
+
+        function triggerAbilityByKey(key) {
+            if ((userData.abilityInventory[key] || 0) > 0) {
+                userData.abilityInventory[key] -= 1; saveUserData(); updateHUDAbilities(); playSound('ability');
+                if (key === 'sneakers') { isSneakersActive = true; setTimeout(() => isSneakersActive = false, 8000); }
+                if (key === 'jump') { player.y = 10; setTimeout(() => player.y = 0, 2000); }
+                if (key === 'field') { isFieldActive = true; setTimeout(() => isFieldActive = false, 6000); }
+                if (key === 'freeze') { momFrozen = true; setTimeout(() => momFrozen = false, 8000); }
+                if (key === 'invisible') { isInvisible = true; playerMesh.visible = false; setTimeout(() => { isInvisible = false; playerMesh.visible = isThirdPerson; }, 10000); }
+                if (key === 'magnet') { keysObjects.forEach((k, idx) => { if (!k.collected) collectKeyByIndex(idx); }); }
+                if (key === 'shield') { isShieldActive = true; setTimeout(() => isShieldActive = false, 12000); }
+            }
+        }
+
+        function startGame() {
+            hideAllModals(); collectedKeys = 0;
+            momFrozen = false; isInvisible = false; isShieldActive = false; isSneakersActive = false; isFieldActive = false;
+            player.y = 0; doorMesh.material.color.setHex(0x70a1ff);
+            targetKeysCount = Math.min(20, 2 + Math.floor(currentLevel / 20));
+            mom.speed = Math.min(0.25, 0.07 + (currentLevel * 0.0002));
+            document.getElementById('keys-count').innerText = collectedKeys;
+            document.getElementById('max-keys-count').innerText = targetKeysCount;
+            document.getElementById('level-display').innerText = currentLevel;
+            updateHUDAbilities();
+            player.x = 80; player.z = 80; mom.x = -80; mom.z = -80;
+            spawnKeys(); gameActive = true; animate();
+        }
+
+        function spawnKeys() {
+            keysObjects.forEach(k => scene.remove(k.mesh)); keysObjects = [];
+            const keyGeo = new THREE.TorusGeometry(0.6, 0.2, 12, 24);
+            const keyMat = new THREE.MeshStandardMaterial({ color: 0xf9ca24 });
+            for (let i = 0; i < targetKeysCount; i++) {
+                let mesh = new THREE.Mesh(keyGeo, keyMat);
+                let x = (Math.random() - 0.5) * 160, z = (Math.random() - 0.5) * 160;
+                mesh.position.set(x, 1.5, z); scene.add(mesh);
+                keysObjects.push({ mesh, x, z, collected: false });
+            }
+        }
+
+        function collectKeyByIndex(index) {
+            if (keysObjects[index] && !keysObjects[index].collected) {
+                keysObjects[index].collected = true;
+                scene.remove(keysObjects[index].mesh);
+                collectedKeys++; playSound('key');
+                userData.totalKeysCollected = (userData.totalKeysCollected || 0) + 1;
+                userData.keyCounterForCoin = (userData.keyCounterForCoin || 0) + 1;
+                if (userData.keyCounterForCoin >= 5) { userData.coins += 1; userData.keyCounterForCoin = 0; document.getElementById('coins-count').innerText = userData.coins; }
+                unlockAchievement('first_key');
+                saveUserData(); document.getElementById('keys-count').innerText = collectedKeys;
+                if (collectedKeys === targetKeysCount) doorMesh.material.color.setHex(0x2ed573);
+            }
+        }
+
+        function animate() {
+            if (!gameActive) return;
+            requestAnimationFrame(animate);
+
+            let speedMultiplier = isSneakersActive ? 2.2 : (isBoostActive ? 1.5 : 1.0);
+
+            // حركة اللاعب عبر عصا التحكم الموبايل
+            if (joystickMove.x !== 0 || joystickMove.y !== 0) {
+                let moveX = -joystickMove.x * Math.cos(player.yaw) - joystickMove.y * Math.sin(player.yaw);
+                let moveZ = joystickMove.x * Math.sin(player.yaw) - joystickMove.y * Math.cos(player.yaw);
+                player.x = Math.max(-95, Math.min(95, player.x + moveX * player.speed * speedMultiplier));
+                player.z = Math.max(-95, Math.min(95, player.z + moveZ * player.speed * speedMultiplier));
+
+                playerStepTimer += 0.016 * speedMultiplier;
+                if (playerStepTimer > 0.3) { playSound('player_step'); playerStepTimer = 0; }
+            }
+
+            // تحديث الكاميرا
+            if (isThirdPerson) {
+                let cx = player.x + Math.sin(player.yaw) * cameraDistance;
+                let cz = player.z + Math.cos(player.yaw) * cameraDistance;
+                camera.position.set(cx, player.y + cameraHeight, cz);
+                camera.lookAt(player.x, player.y + 1.5, player.z);
+            } else {
+                camera.position.set(player.x, player.y + 2.0, player.z);
+                camera.rotation.y = player.yaw;
+            }
+
+            playerMesh.position.set(player.x, player.y, player.z);
+            playerMesh.rotation.y = player.yaw;
+
+            if (isMultiplayer && connection && connection.open) {
+                connection.send({ type: 'playerPos', x: player.x, y: player.y, z: player.z, yaw: player.yaw, invisible: isInvisible });
+            }
+
+            // حركة الأم
+            let distanceToMom = Math.hypot(player.x - mom.x, player.z - mom.z);
+            if (!momFrozen && !isInvisible) {
+                let mSpeed = isFieldActive ? mom.speed * 0.1 : mom.speed;
+                let dx = player.x - mom.x, dz = player.z - mom.z;
+                let dist = Math.hypot(dx, dz);
+                if (dist > 0.1) { mom.x += (dx / dist) * mSpeed; mom.z += (dz / dist) * mSpeed; }
+
+                momStepTimer += 0.016;
+                if (momStepTimer > 0.35) { playSound('mom_step', distanceToMom); momStepTimer = 0; }
+            }
+            momMesh.position.set(mom.x, 0, mom.z);
+
+            keysObjects.forEach((k, idx) => {
+                if (!k.collected && Math.hypot(player.x - k.x, player.z - k.z) < 3.5) {
+                    collectKeyByIndex(idx);
+                    if (isMultiplayer && connection) connection.send({ type: 'key', index: idx });
+                }
+            });
+
+            // الاصطدام بالأم
+            if (!isInvisible && distanceToMom < 2.5) {
+                if (isShieldActive) { isShieldActive = false; mom.x = -80; mom.z = -80; } 
+                else { endGame(false, `مسكتك الأم بالشبشب في المستوى ${currentLevel}! 🩴`); }
+            }
+
+            // فوز بالمستوى
+            if (collectedKeys === targetKeysCount && Math.hypot(player.x - door.x, player.z - door.z) < 4.0) {
+                if (currentLevel === 1) unlockAchievement('win_level_1');
+                if (currentLevel < 1000) {
+                    currentLevel++;
+                    if (currentLevel > userData.maxLevelReached) { userData.maxLevelReached = currentLevel; userData.coins += 30; saveUserData(); }
+                    if (isMultiplayer && connection) connection.send({ type: 'next_level', level: currentLevel });
+                    startGame();
+                } else {
+                    endGame(true, `🏆 أسطوري! ختمت اللعبة بالكامل!`);
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function endGame(won, msg) {
+            gameActive = false;
+            document.getElementById('menu-title').innerText = won ? "🏆 فوز!" : "خسارة! 🩴";
+            document.getElementById('menu-desc').innerText = msg;
+            document.getElementById('btn-start-game').innerText = `إعادة المستوى ${currentLevel} 🔄`;
+            document.getElementById('menu-modal').style.display = 'flex';
+        }
+
+        window.onload = init3D;
     </script>
 </body>
 </html>
